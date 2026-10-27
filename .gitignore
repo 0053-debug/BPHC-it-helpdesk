@@ -1,0 +1,13 @@
+﻿# Maven / Spring Boot
+backend/target/
+*.log
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+
+# Environment & IDE files
+.env
+.idea/
+.vscode/
+*.DS_Store
