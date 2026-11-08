@@ -1,5 +1,6 @@
 package com.iitsm.core.exception;
 
+import com.iitsm.servicecatalog.exception.CircularDependencyException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(CircularDependencyException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCircularDependency(CircularDependencyException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(InvalidStateTransitionException.class)
     public ResponseEntity<ErrorResponseDTO> handleInvalidStateTransition(InvalidStateTransitionException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
@@ -26,6 +32,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedOperationException.class)
     public ResponseEntity<ErrorResponseDTO> handleUnauthorizedOperation(UnauthorizedOperationException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(IitsmException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIitsmException(IitsmException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -49,6 +60,6 @@ public class GlobalExceptionHandler {
                 .message(message)
                 .path(request.getRequestURI())
                 .build();
-        return new ResponseEntity<>(dto, status);
+        return ResponseEntity.status(status).body(dto);
     }
 }
