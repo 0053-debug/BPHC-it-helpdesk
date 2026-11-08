@@ -613,7 +613,7 @@ AI agents must not silently resolve these:
 1. **Registration policy:** The requirements assume pre-registered enterprise accounts, while the roadmap lists a registration endpoint/page. Confirm whether public self-registration is allowed or whether accounts are seeded/admin-created.
 2. **Priority formula input ownership:** Confirm how service criticality factor and service weight are represented in the service catalog and how missing values are handled. Do not invent defaults beyond the stated scales.
 3. **Duplicate similarity combination:** The roadmap mentions Jaccard and Levenshtein but does not specify how the two scores are combined. Agree on and document the exact formula.
-4. **Real-time dashboard transport:** The requirements say real-time/live updates but do not mandate polling, Server-Sent Events, or WebSockets. Choose the simplest approach the team can implement and document it.
+4. **Real-time dashboard transport (RESOLVED):** Implemented via Spring Boot STOMP WebSocket broker (`/ws-iitsm`) with SockJS fallback, broadcasting over `/topic/notifications/{userId}` and `/topic/admin-alerts` for sub-50ms live client updates. Coupled with Google Firebase Cloud Messaging (FCM) for mobile push alerts.
 5. **Response SLA versus P1 escalation clock:** Response SLA is measured from creation, while P1 unacknowledged escalation is worded as 5 minutes after assignment. Preserve both clocks unless the team explicitly decides otherwise.
 6. **Resolution verification and closure:** The lifecycle lists separate `VERIFIED` and `CLOSED` states, while the permission matrix describes requester verification/closure. Agree on the exact actor/action mapping and document it without skipping either state.
 7. **SLA policy changes:** Confirm whether policy edits apply only to new incidents or also affect already-open incidents.
@@ -653,3 +653,69 @@ Before finishing, report:
 6. Any required follow-up from another module owner.
 
 **Definition of done:** A feature is not complete merely because code was generated. It must integrate with the agreed contracts, persist correctly where required, enforce permissions and business rules, have relevant tests, be documented, and be reviewable by another team member.
+
+---
+
+## 21. Person 4 Implementation & GoF Observer Architecture
+
+The `feature/services-analytics` branch provides the full-stack implementation of the Service Desk, Notifications, and Analytics subsystem:
+
+1. **Hybrid GoF Observer Pattern (`com.iitsm.events`):**
+   - Explicit GoF contracts: `IncidentSubject` (`registerObserver`, `removeObserver`, `notifyObservers`) and `IncidentObserver` (`onIncidentEvent(IncidentEvent event)`).
+   - Concrete `IncidentEventPublisher` manages registered observers while bridging seamlessly to Spring's `ApplicationEventPublisher`.
+   - Concrete observers implement decoupled reactions:
+     - `AuditLogObserver`: Synchronously commits immutable audit history within the active transaction.
+     - `WebSocketNotificationObserver`: Broadcasts live STOMP JSON payloads to `/topic/notifications/{userId}` and `/topic/admin-alerts`.
+     - `EmailNotificationObserver`: Asynchronously formats and sends SMTP email alerts via `JavaMailSender` (catches mail downtime without transaction rollback).
+     - `FcmPushNotificationObserver`: Dispatches Google Firebase Cloud Messaging mobile push notifications with simulated fallback.
+
+2. **Service Catalog & Dependency Graph (`com.iitsm.servicecatalog`):**
+   - Models services, criticality factors ($C \in [1.0, 2.0]$), baseline SLA weights, and baseline MTTR.
+   - Implements self-referencing `@ManyToMany` dependencies representing upstream/downstream architecture.
+   - Enforces Directed Acyclic Graph (DAG) invariants via cycle-detection algorithms (rejects circular dependencies).
+   - Serves `GET /api/services/dependency-graph` with nodes and edges for the React visualization.
+
+3. **Intelligent Multi-Metric Bottleneck & Anomaly Detection Engine (`com.iitsm.analytics`):**
+   - Service SLA Breach Bottleneck: Flags services where SLA breach rate $> 25\%$.
+   - MTTR Degradation: Flags services where resolution time exceeds $1.5\times$ baseline expected MTTR.
+   - Recurring Category Spike: Flags incident categories exceeding $35\%$ of active volume or deviating by $> 2\sigma$ from rolling averages.
+   - Technician Capacity Saturation: Flags engineers with active load $\ge 80\%$ capacity limit.
+
+4. **Hardware/Database-Level Immutable Audit Trail (`com.iitsm.audit`):**
+   - Enforced by PostgreSQL trigger `trg_audit_logs_immutable` raising an exception on any `UPDATE` or `DELETE` statement.
+   - JPA entity fields mapped with `@Column(updatable = false)`.
+
+---
+
+## 22. Product Landing Page, Firebase Hosting & Download Links Maintenance Rule
+
+1. **Product Introduction & Cross-Platform Download Hub (`LandingPage.jsx`):**
+   - The root user interface presents a dark-mode, enterprise product introduction page highlighting core capabilities, architecture highlights, and live metrics.
+   - Features dedicated download cards for:
+     - **Android Client (.apk):** Direct download package with Google FCM push background sync.
+     - **Windows Desktop (.msix):** Native Windows desktop installer.
+     - **Cloud Web Console (PWA):** Direct link launching into the live operational dashboard.
+     - **Apple iOS:** Mobile Safari standalone PWA launcher.
+
+2. **Firebase Hosting Integration (`frontend/firebase.json`):**
+   - Configured to serve `dist/` directly via Firebase Hosting.
+   - Deployable via `cd frontend && npm run build && firebase deploy --only hosting`.
+
+3. **NON-NEGOTIABLE RULE: Continuous Download Links Maintenance:**
+   - Every contributor and AI agent pushing updates to the repository must ensure that the download links and package filenames referenced in `LandingPage.jsx` (`bphc-iitsm-client-v1.0.apk`, `bphc-iitsm-desktop-setup.msix`, and Web Console routing) remain valid, synchronized, and functional with each build.
+   - Breaking or disconnecting the download cards, or removing the cross-platform download links during UI refactoring, is strictly prohibited.
+
+---
+
+## 23. Cloud-Native Database Architecture & HikariCP Heartbeat Specification
+
+1. **Supported Persistence Engines:**
+   - Designed to run seamlessly against cloud-hosted serverless PostgreSQL (e.g. Neon, Supabase, Oracle Cloud Always-Free VM) or local PostgreSQL without code changes.
+   - Connection string, username, and password configured via environment variables (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`) in `application.yml`.
+
+2. **HikariCP Connection Pool Settings:**
+   - `keepalive-time: 30000` (30 seconds): Emits periodic TCP heartbeat pings to prevent cloud firewalls from dropping idle serverless connections.
+   - `max-lifetime: 600000` (10 minutes): Retires old connections cleanly before cloud host timeouts.
+   - `connection-timeout: 30000` (30 seconds): Handles cold-start latency gracefully.
+   - `maximum-pool-size: 10`: Limits connection consumption on free-tier database instances.
+
