@@ -6,12 +6,16 @@ backend/target/
 frontend/node_modules/
 frontend/dist/
 
-# Environment & IDE files
+# Environment, Secrets & IDE files
 .env
 *.env
 *.env.*
 set-env.ps1
 backend/set-env.ps1
+*firebase*.json
+*-service-account*.json
+*.pem
+*.key
 .idea/
 .vscode/
 *.DS_Store

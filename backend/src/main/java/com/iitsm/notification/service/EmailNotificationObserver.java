@@ -5,6 +5,7 @@ import com.iitsm.events.IncidentObserver;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -24,6 +25,9 @@ public class EmailNotificationObserver implements IncidentObserver {
 
     private final JavaMailSender mailSender;
 
+    @Value("${spring.mail.username:alerts@bphc-iitsm.internal}")
+    private String fromEmail;
+
     @Override
     @Async
     public void onIncidentEvent(IncidentEvent event) {
@@ -39,8 +43,12 @@ public class EmailNotificationObserver implements IncidentObserver {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
 
+            String sender = (fromEmail != null && !fromEmail.isBlank() && fromEmail.contains("@")) 
+                    ? fromEmail 
+                    : "alerts@bphc-iitsm.internal";
+
+            helper.setFrom(sender);
             helper.setTo(event.getRecipientEmail());
-            helper.setFrom("alerts@bphc-iitsm.internal");
             helper.setSubject(String.format("[I-ITSM Alert] %s: Incident #%s",
                     event.getEventType(), event.getIncidentId()));
 
@@ -48,7 +56,7 @@ public class EmailNotificationObserver implements IncidentObserver {
             helper.setText(htmlContent, true); // true = HTML format
 
             mailSender.send(mimeMessage);
-            log.info("HTML email successfully dispatched to Mailtrap for {}", event.getRecipientEmail());
+            log.info("HTML email successfully dispatched to {} via SMTP", event.getRecipientEmail());
         } catch (Exception ex) {
             // Graceful degradation rule from AGENTS.md: Mail downtime must not fail the primary transaction
             log.warn("SMTP email dispatch failed for recipient {}: {}. Continuing without transaction rollback.",
