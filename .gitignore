@@ -1,4 +1,4 @@
-﻿# Maven / Spring Boot
+# Maven / Spring Boot
 backend/target/
 *.log
 
@@ -8,6 +8,10 @@ frontend/dist/
 
 # Environment & IDE files
 .env
+*.env
+*.env.*
+set-env.ps1
+backend/set-env.ps1
 .idea/
 .vscode/
 *.DS_Store
