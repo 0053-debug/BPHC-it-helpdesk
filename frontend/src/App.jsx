@@ -5,16 +5,21 @@ import {
   Shield,
   Bell,
   Cpu,
-  Layers,
-  Sparkles
+  Download,
+  Home
 } from 'lucide-react';
+import LandingPage from './pages/LandingPage';
 import ItManagerDashboardPage from './pages/ItManagerDashboardPage';
 import ServiceManagementPage from './pages/ServiceManagementPage';
 import AuditLogsPage from './pages/AuditLogsPage';
 import NotificationBell from './components/NotificationBell';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('landing'); // Starts on the product introduction / download landing page
+
+  if (activeTab === 'landing') {
+    return <LandingPage onLaunchApp={() => setActiveTab('dashboard')} />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800">
@@ -22,9 +27,13 @@ export default function App() {
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
+            <button
+              onClick={() => setActiveTab('landing')}
+              className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md hover:opacity-90 transition"
+              title="Return to Product Home & Downloads"
+            >
               <Cpu className="w-6 h-6" />
-            </div>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base tracking-tight text-slate-900">BPHC I-ITSM</span>
@@ -38,6 +47,14 @@ export default function App() {
 
           {/* Navigation Links */}
           <nav className="flex items-center gap-1 sm:gap-2">
+            <button
+              onClick={() => setActiveTab('landing')}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
+            >
+              <Download className="w-4 h-4 text-emerald-600" />
+              <span className="hidden sm:inline">Downloads</span>
+            </button>
+
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
