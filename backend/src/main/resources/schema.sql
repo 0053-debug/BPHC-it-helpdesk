@@ -39,19 +39,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- PostgreSQL Immutability Trigger for Audit Trail
-CREATE OR REPLACE FUNCTION enforce_audit_log_immutability()
-RETURNS TRIGGER AS $$
-BEGIN
-    RAISE EXCEPTION 'Audit records are strictly immutable. UPDATE and DELETE operations are forbidden.';
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_audit_logs_immutable ON audit_logs;
-CREATE TRIGGER trg_audit_logs_immutable
-BEFORE UPDATE OR DELETE ON audit_logs
-FOR EACH ROW EXECUTE FUNCTION enforce_audit_log_immutability();
-
+-- PostgreSQL Immutability Trigger for Audit Trail is registered in AuditTrailDbInitializer
 -- 3. Notifications (Person 4)
 CREATE TABLE IF NOT EXISTS notifications (
     id BIGSERIAL PRIMARY KEY,
