@@ -3,16 +3,16 @@ import { Bell, Check, Clock, ExternalLink } from 'lucide-react';
 import api from '../services/api';
 import wsService from '../services/websocketService';
 
-export default function NotificationBell({ userId = 1 }) {
+export default function NotificationBell({ userId }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
   const fetchNotifications = async () => {
     try {
-      const res = await api.get(`/notifications?userId=${userId}&size=8`);
+      const res = await api.get('/notifications?size=8');
       setNotifications(res.data.content || []);
-      const countRes = await api.get(`/notifications/unread-count?userId=${userId}`);
+      const countRes = await api.get('/notifications/unread-count');
       setUnreadCount(countRes.data.unreadCount || 0);
     } catch (err) {
       console.warn('Could not fetch notifications:', err.message);
@@ -43,7 +43,7 @@ export default function NotificationBell({ userId = 1 }) {
 
   const handleMarkAllRead = async () => {
     try {
-      await api.patch(`/notifications/read-all?userId=${userId}`);
+      await api.patch('/notifications/read-all');
       setUnreadCount(0);
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (e) {

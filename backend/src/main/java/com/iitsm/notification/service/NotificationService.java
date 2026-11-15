@@ -1,6 +1,7 @@
 package com.iitsm.notification.service;
 
 import com.iitsm.core.exception.ResourceNotFoundException;
+import com.iitsm.core.exception.UnauthorizedOperationException;
 import com.iitsm.notification.model.Notification;
 import com.iitsm.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +34,12 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAsRead(Long notificationId) {
+    public void markAsRead(Long notificationId, Long recipientId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification", notificationId));
+        if (!recipientId.equals(notification.getRecipientId())) {
+            throw new UnauthorizedOperationException("You may only mark your own notifications as read");
+        }
         notification.setIsRead(true);
         notificationRepository.save(notification);
     }

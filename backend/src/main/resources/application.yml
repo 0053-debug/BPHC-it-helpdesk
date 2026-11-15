@@ -49,8 +49,10 @@ spring:
 # Security & JWT
 app:
   jwt:
-    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    secret: ${JWT_SECRET:}
     expiration-ms: 86400000 # 24 hours
+  demo-accounts:
+    enabled: ${DEMO_ACCOUNTS_ENABLED:false}
   firebase:
     credentials-path: ${FIREBASE_CREDENTIALS_PATH:firebase-service-account.json}
     enabled: ${FIREBASE_ENABLED:false}

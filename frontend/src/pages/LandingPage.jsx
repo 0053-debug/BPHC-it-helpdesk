@@ -15,7 +15,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-export default function LandingPage({ onLaunchApp }) {
+export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
   const [downloadStarted, setDownloadStarted] = useState(null);
 
   const triggerMockDownload = (platform, filename) => {
@@ -58,6 +58,12 @@ export default function LandingPage({ onLaunchApp }) {
             <a href="#features" className="text-xs font-semibold text-slate-300 hover:text-white transition hidden md:block">
               Architecture & Features
             </a>
+            <button onClick={onLogin} className="text-xs font-semibold text-slate-300 hover:text-white transition">
+              Sign in
+            </button>
+            <button onClick={onRegister} className="text-xs font-semibold text-cyan-300 hover:text-white transition">
+              Register
+            </button>
             <button
               onClick={onLaunchApp}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5"
