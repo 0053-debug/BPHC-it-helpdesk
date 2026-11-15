@@ -1,17 +1,19 @@
-package com.bphc.itsm.sla;
+package com.iitsm.sla;
 
+import com.iitsm.core.model.SLAPolicy;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 
 @Service
 public class SLAService {
 
     public LocalDateTime responseDeadline(LocalDateTime createdAt, SLAPolicy policy) {
-        return createdAt.plusMinutes(policy.getResponseMinutes());
+        return createdAt.plusMinutes(policy.getResponseTargetMinutes());
     }
 
     public LocalDateTime resolutionDeadline(LocalDateTime createdAt, SLAPolicy policy) {
-        return createdAt.plusMinutes(policy.getResolutionMinutes());
+        return createdAt.plusMinutes(policy.getResolutionTargetMinutes());
     }
 
     // resolvedAt can be null if the incident is still open

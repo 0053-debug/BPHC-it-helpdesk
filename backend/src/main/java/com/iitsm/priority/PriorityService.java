@@ -1,5 +1,8 @@
-package com.bphc.itsm.priority;
+package com.iitsm.priority;
 
+import com.iitsm.core.enums.Impact;
+import com.iitsm.core.enums.Priority;
+import com.iitsm.core.enums.Urgency;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,7 +14,8 @@ public class PriorityService {
         this.strategy = strategy;
     }
 
-    public Priority determine(int impact, int urgency, int businessCriticality) {
+    public Priority determine(Impact impact, Urgency urgency, int businessCriticality) {
         return strategy.calculate(impact, urgency, businessCriticality);
     }
 }
+

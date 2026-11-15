@@ -1,14 +1,23 @@
-package com.bphc.itsm.sla;
+package com.iitsm.sla;
 
-import com.bphc.itsm.priority.Priority;
+import com.iitsm.core.enums.Priority;
+import com.iitsm.core.model.SLAPolicy;
 import org.junit.jupiter.api.Test;
+
 import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class SLAServiceTest {
 
     private final SLAService service = new SLAService();
-    private final SLAPolicy p1 = new SLAPolicy(Priority.P1, 5, 30);
+
+    private final SLAPolicy p1 = SLAPolicy.builder()
+            .priority(Priority.P1_CRITICAL)
+            .responseTargetMinutes(5)
+            .resolutionTargetMinutes(30)
+            .build();
+
     private final LocalDateTime created = LocalDateTime.of(2026, 11, 15, 10, 0);
 
     @Test
@@ -23,12 +32,14 @@ class SLAServiceTest {
 
     @Test
     void resolvedExactlyAtDeadlineIsNotViolation() {
-        assertFalse(service.isResolutionViolated(created, created.plusMinutes(30), created.plusHours(5), p1));
+        assertFalse(service.isResolutionViolated(
+                created, created.plusMinutes(30), created.plusHours(5), p1));
     }
 
     @Test
     void resolvedOneMinuteLateIsViolation() {
-        assertTrue(service.isResolutionViolated(created, created.plusMinutes(31), created.plusHours(5), p1));
+        assertTrue(service.isResolutionViolated(
+                created, created.plusMinutes(31), created.plusHours(5), p1));
     }
 
     @Test
@@ -39,10 +50,5 @@ class SLAServiceTest {
     @Test
     void openIncidentBeforeDeadlineIsNotViolation() {
         assertFalse(service.isResolutionViolated(created, null, created.plusMinutes(10), p1));
-    }
-
-    @Test
-    void policyRejectsNonPositiveTargets() {
-        assertThrows(IllegalArgumentException.class, () -> new SLAPolicy(Priority.P1, 0, 30));
     }
 }

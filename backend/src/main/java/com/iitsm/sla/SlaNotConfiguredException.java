@@ -1,4 +1,4 @@
-package com.bphc.itsm.sla;
+package com.iitsm.sla;
 
 public class SlaNotConfiguredException extends RuntimeException {
     public SlaNotConfiguredException(String message) {
