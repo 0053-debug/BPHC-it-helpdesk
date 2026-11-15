@@ -8,13 +8,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class TextSimilarityService {
+public class TextSimilarityService implements SimilarityStrategy{
 
     private static final Set<String> STOP_WORDS = Set.of(
             "the", "a", "an", "is", "are", "to", "of", "and", "in", "on",
             "for", "it", "not", "my", "i", "unable", "cannot", "cant");
 
     // Jaccard similarity: shared words divided by all distinct words (0.0 to 1.0)
+    @Override
     public double similarity(String first, String second) {
         Set<String> a = tokens(first);
         Set<String> b = tokens(second);
