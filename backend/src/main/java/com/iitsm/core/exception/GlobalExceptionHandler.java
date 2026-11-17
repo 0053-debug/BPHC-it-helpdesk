@@ -1,10 +1,12 @@
 package com.iitsm.core.exception;
 
-import com.iitsm.servicecatalog.exception.CircularDependencyException;
+import com.iitsm.user.assignment.NoEligibleTechnicianException;
+import com.iitsm.user.exception.InvalidCredentialsException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,11 +19,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
-    }
-
-    @ExceptionHandler(CircularDependencyException.class)
-    public ResponseEntity<ErrorResponseDTO> handleCircularDependency(CircularDependencyException ex, HttpServletRequest request) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(InvalidStateTransitionException.class)
@@ -39,6 +36,30 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(IncidentWorkloadUnavailableException.class)
+    public ResponseEntity<ErrorResponseDTO> handleWorkloadUnavailable(
+            IncidentWorkloadUnavailableException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(NoEligibleTechnicianException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNoEligibleTechnician(
+            NoEligibleTechnicianException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidCredentials(
+            InvalidCredentialsException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponseDTO> handleResponseStatus(
+            ResponseStatusException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.valueOf(ex.getStatusCode().value()), ex.getReason(), request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDTO> handleValidationErrors(MethodArgumentNotValidException ex, HttpServletRequest request) {
         String combinedMessage = ex.getBindingResult().getFieldErrors().stream()
@@ -49,7 +70,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGenericException(Exception ex, HttpServletRequest request) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred: " + ex.getMessage(), request);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", request);
     }
 
     private ResponseEntity<ErrorResponseDTO> buildResponse(HttpStatus status, String message, HttpServletRequest request) {
