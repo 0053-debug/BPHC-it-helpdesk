@@ -20,11 +20,20 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - name: Check API endpoint configuration
+        run: |
+          if [ -z "$VITE_API_BASE_URL" ] || [ -z "$VITE_WS_BASE_URL" ]; then
+            echo "Set VITE_API_BASE_URL and VITE_WS_BASE_URL repository variables to a reachable backend before deploying the static site."
+            exit 1
+          fi
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL }}
       - name: Build web app
         run: npm run build
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://bphc-iitsm-api.onrender.com/api' }}
-          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL || 'https://bphc-iitsm-api.onrender.com' }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL }}
       - name: Deploy Hosting site
         working-directory: .
         run: npx --yes firebase-tools deploy --only hosting --project bphc-it-helpdesk --non-interactive

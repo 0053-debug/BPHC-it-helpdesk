@@ -9,17 +9,16 @@ prioritizing, assigning, and tracking internal IT incidents.
   security, and automated tests.
 - `frontend/` — React and Vite application.
 - `docs/` — Project brief, requirements, architecture, and delivery checklist.
-- Firebase Hosting and desktop/mobile packaging instructions are in
-  `docs/deployment.md`.
+- No-card demo deployment and hosting limits are in `docs/deployment.md`.
 
 ## Run locally
 
 Requirements: Java 17+, Node.js/npm, and PostgreSQL.
 
-1. Configure backend environment variables using `backend/.env.example`.
-2. Create a PostgreSQL database and set its connection details.
-3. Start the API from `backend/` with `./mvnw spring-boot:run` (Windows:
-   `mvnw.cmd spring-boot:run`).
+1. Put backend environment variables in the ignored root `.env` file. The
+   `scripts/run-backend.ps1` helper loads them before starting Spring Boot.
+2. Configure PostgreSQL connection details in `.env`.
+3. Start the API with `./scripts/run-backend.ps1` (Windows PowerShell).
 4. Install frontend dependencies from `frontend/` with `npm ci`, then run
    `npm run dev`.
 

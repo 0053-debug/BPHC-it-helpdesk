@@ -5,16 +5,19 @@ PostgreSQL.
 
 ## Configuration
 
-Copy `.env.example` to `.env` and provide a database URL, username, password,
-and a strong `JWT_SECRET`. Optional Firebase and SMTP integrations should be
-enabled only when their credentials are configured. Do not commit secrets.
+The repository root `.env` is the local environment file. It is ignored by Git.
+Spring Boot does not load `.env` automatically, so start the API from the
+repository root with `./scripts/run-backend.ps1` (Windows PowerShell); the
+helper exports its entries to the backend process without printing their
+values. `backend/.env.example` documents the required variable names. Optional
+Firebase and SMTP integrations should be enabled only when configured.
 
 ## Run
 
-From this directory:
+From the repository root:
 
 ```powershell
-.\mvnw.cmd spring-boot:run
+.\scripts\run-backend.ps1
 ```
 
 The API listens on port 8080 by default. API configuration is in

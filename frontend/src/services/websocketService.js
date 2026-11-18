@@ -1,9 +1,7 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-const webSocketBaseUrl = import.meta.env.VITE_WS_BASE_URL || (import.meta.env.DEV
-  ? ''
-  : 'https://bphc-iitsm-api.onrender.com');
+const webSocketBaseUrl = import.meta.env.VITE_WS_BASE_URL || '';
 
 class WebSocketService {
   constructor() {
