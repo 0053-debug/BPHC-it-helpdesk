@@ -11,12 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,9 +22,6 @@ class WebSocketNotificationObserverTest {
 
     @Mock
     private NotificationService notificationService;
-
-    @Mock
-    private SimpMessagingTemplate messagingTemplate;
 
     @InjectMocks
     private WebSocketNotificationObserver observer;
@@ -47,14 +42,12 @@ class WebSocketNotificationObserverTest {
     }
 
     @Test
-    @DisplayName("Test 6: Dispatches STOMP message to user-specific and admin alert topics")
-    void shouldDispatchWebSocketMessagesOnEvent() {
+    @DisplayName("Test 6: Persists notification to database for in-app client polling")
+    void shouldPersistNotificationOnEvent() {
         when(notificationService.save(any(Notification.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         observer.onIncidentEvent(event);
 
         verify(notificationService, times(1)).save(any(Notification.class));
-        verify(messagingTemplate, times(1)).convertAndSend(eq("/topic/notifications/3"), any(Notification.class));
-        verify(messagingTemplate, times(1)).convertAndSend(eq("/topic/admin-alerts"), eq(event));
     }
 }

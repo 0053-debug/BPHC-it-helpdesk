@@ -7,13 +7,12 @@ import com.iitsm.notification.model.NotificationChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Concrete GoF Observer for Real-Time In-App WebSocket notifications.
- * Broadcasts via STOMP broker to connected React clients.
+ * Concrete GoF Observer for In-App Incident notifications.
+ * Persists notifications directly to PostgreSQL database for client retrieval and periodic polling.
  */
 @Component
 @Order(2)
@@ -22,46 +21,31 @@ import org.springframework.transaction.annotation.Transactional;
 public class WebSocketNotificationObserver implements IncidentObserver {
 
     private final NotificationService notificationService;
-    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     @Transactional
     public void onIncidentEvent(IncidentEvent event) {
         if (event.getRecipientId() == null) {
-            log.debug("No specific recipient for event {}, broadcasting only to admin topic.", event.getEventType());
-        } else {
-            String title = String.format("[%s] Incident #%s", event.getEventType(), event.getIncidentId());
-            String message = event.getDescription() != null ? event.getDescription() :
-                    String.format("Incident state changed: %s -> %s", event.getPreviousState(), event.getNewState());
-
-            // 1. Persist notification in database
-            Notification notification = Notification.builder()
-                    .recipientId(event.getRecipientId())
-                    .recipientEmail(event.getRecipientEmail())
-                    .title(title)
-                    .message(message)
-                    .channel(NotificationChannel.IN_APP_WS)
-                    .referenceId(event.getIncidentId())
-                    .isRead(false)
-                    .build();
-
-            Notification saved = notificationService.save(notification);
-
-            // 2. Broadcast via STOMP WebSocket topic for this specific recipient
-            String userTopic = "/topic/notifications/" + event.getRecipientId();
-            try {
-                messagingTemplate.convertAndSend(userTopic, saved);
-                log.info("Dispatched WebSocket notification to user topic: {}", userTopic);
-            } catch (Exception e) {
-                log.warn("Could not dispatch WebSocket message to {}: {}", userTopic, e.getMessage());
-            }
+            log.debug("No specific recipient for event {}, skipping direct user notification.", event.getEventType());
+            return;
         }
 
-        // 3. Global notification for admins/team leads
-        try {
-            messagingTemplate.convertAndSend("/topic/admin-alerts", event);
-        } catch (Exception e) {
-            log.warn("Could not dispatch WebSocket message to /topic/admin-alerts: {}", e.getMessage());
-        }
+        String title = String.format("[%s] Incident #%s", event.getEventType(), event.getIncidentId());
+        String message = event.getDescription() != null ? event.getDescription() :
+                String.format("Incident state changed: %s -> %s", event.getPreviousState(), event.getNewState());
+
+        // 1. Persist notification in database
+        Notification notification = Notification.builder()
+                .recipientId(event.getRecipientId())
+                .recipientEmail(event.getRecipientEmail())
+                .title(title)
+                .message(message)
+                .channel(NotificationChannel.IN_APP_WS)
+                .referenceId(event.getIncidentId())
+                .isRead(false)
+                .build();
+
+        Notification saved = notificationService.save(notification);
+        log.info("Persisted in-app notification #{} for user {}", saved.getId(), event.getRecipientId());
     }
 }

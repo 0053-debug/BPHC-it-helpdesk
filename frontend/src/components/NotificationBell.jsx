@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Check, Clock, ExternalLink } from 'lucide-react';
 import api from '../services/api';
-import wsService from '../services/websocketService';
 
 export default function NotificationBell({ userId }) {
   const [unreadCount, setUnreadCount] = useState(0);
@@ -20,24 +19,19 @@ export default function NotificationBell({ userId }) {
   };
 
   useEffect(() => {
+    // Initial fetch on mount or user change
     fetchNotifications();
 
-    // Connect WebSocket
-    wsService.connect(() => {
-      // Subscribe to user personal notifications
-      wsService.subscribe(`/topic/notifications/${userId}`, (newNotif) => {
-        setNotifications((prev) => [newNotif, ...prev]);
-        setUnreadCount((prev) => prev + 1);
-      });
+    // Periodic background sync every 30 seconds
+    const intervalId = setInterval(fetchNotifications, 30000);
 
-      // Subscribe to global admin alerts
-      wsService.subscribe('/topic/admin-alerts', (alert) => {
-        console.log('[Admin Alert]', alert);
-      });
-    });
+    // Refresh instantly when the user focuses the window or switches back to this app tab
+    const handleFocus = () => fetchNotifications();
+    window.addEventListener('focus', handleFocus);
 
     return () => {
-      wsService.unsubscribe(`/topic/notifications/${userId}`);
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
     };
   }, [userId]);
 
@@ -83,8 +77,8 @@ export default function NotificationBell({ userId }) {
           <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
             <div className="flex items-center space-x-2">
               <span className="font-semibold text-slate-800 text-sm">Notifications</span>
-              <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">
-                Live (STOMP)
+              <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">
+                Auto-Sync
               </span>
             </div>
             {unreadCount > 0 && (
@@ -125,7 +119,7 @@ export default function NotificationBell({ userId }) {
 
           <div className="p-2.5 bg-slate-50 border-t border-slate-200 text-center">
             <span className="text-[11px] text-slate-500">
-              Real-time push enabled via WebSockets & FCM
+              Live updates active • Synced with Neon database
             </span>
           </div>
         </div>
