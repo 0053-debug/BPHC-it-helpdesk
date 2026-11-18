@@ -22,8 +22,8 @@ export default function NotificationBell({ userId }) {
     // Initial fetch on mount or user change
     fetchNotifications();
 
-    // Periodic background sync every 30 seconds
-    const intervalId = setInterval(fetchNotifications, 30000);
+    // Periodic background sync every 30 minutes (1,800,000 ms)
+    const intervalId = setInterval(fetchNotifications, 30 * 60 * 1000);
 
     // Refresh instantly when the user focuses the window or switches back to this app tab
     const handleFocus = () => fetchNotifications();
