@@ -5,13 +5,13 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-green?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-blue?style=flat-square&logo=react)](https://vitejs.dev)
 [![Platforms](https://img.shields.io/badge/Platforms-Windows%20%7C%20Android%20%7C%20Web-purple?style=flat-square)]()
-[![Course](https://img.shields.io/badge/BITS%20Pilani-CS%20F213%20%2F%20MAC%20F212%20OOP-red?style=flat-square)]()
+[![Course](https://img.shields.io/badge/BITS%20Pilani-CS%20F213%20OOP-red?style=flat-square)]()
 
 ---
 
 ## Executive Summary
 
-The **Intelligent IT Service Management System (I-ITSM)** is an enterprise-grade ITIL-aligned campus service desk platform developed for the **BITS Pilani Hyderabad Campus (BPHC)** Object-Oriented Programming Course (**CS F213 / MAC F212**, Semester-I, 2026–2027).
+The **Intelligent IT Service Management System (I-ITSM)** is an enterprise-grade ITIL-aligned campus service desk platform developed for the **BITS Pilani Hyderabad Campus (BPHC)** Object-Oriented Programming Course (**CS F213**, Semester-I, 2026–2027).
 
 Modern campus and corporate IT environments face challenges with unorganized incident reporting, delayed technician dispatch, missed SLA commitments, cascading service outages, and uncoordinated resolutions. I-ITSM addresses these challenges by delivering an end-to-end incident lifecycle management platform powered by clean Object-Oriented Design (OOD) patterns, automated SLA tracking, workload-balanced assignment strategies, Directed Acyclic Graph (DAG) service impact modeling, and an immutable PostgreSQL audit ledger.
 
@@ -49,19 +49,6 @@ I-ITSM is built upon enterprise software engineering principles and GoF (Gang of
 ### 5. Algorithmic Duplicate Ticket Detection
 - Performs tokenized text normalization and similarity analysis across recent active tickets.
 - Flags potential duplicate incidents to prevent redundant technician dispatch and overlapping resolutions.
-
----
-
-## Team Division of Responsibilities
-
-The system was architected and implemented across four vertical functional modules:
-
-| Member / Slice | Focus Area | Key Deliverables & Responsibilities |
-| :--- | :--- | :--- |
-| **Person 1** | **Incident Lifecycle & Workspace** | Database schema initialization, CRUD incident repository, `IncidentLifecycle` state machine, user incident reporting form, interactive filtering (status, priority, category), technician resolution workspace, and transition validations. |
-| **Person 2** | **Authentication & Assignment Engine** | Stateless JWT authentication, Spring Security 6 filter chain, BCrypt password hashing, Role-Based Access Control (`EMPLOYEE`, `TECHNICIAN`, `TEAM_LEAD`, `ADMIN`), technician directory registry, and algorithmic workload-balanced technician auto-assignment. |
-| **Person 3** | **SLA Monitoring & Escalation System** | SLA policy resolution ($P1$ through $P4$), threshold breach calculation, background `SlaMonitorService` scheduler, tier-1/tier-2 escalation engine, priority scoring matrix, and SLA violation audit trail. |
-| **Person 4** | **Services, Notifications, Audit & Analytics** | Service catalog management with DAG dependency tree and blast radius calculation, PostgreSQL trigger-enforced immutable audit log, multi-channel notification bell, and IT Manager Executive Dashboard with MTTR metrics and operational KPIs. |
 
 ---
 

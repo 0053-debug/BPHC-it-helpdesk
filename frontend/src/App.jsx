@@ -214,7 +214,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-        BPHC CS F213 / MAC F212 OOP Project (2026–2027) &bull; Intelligent IT Service Management System &bull; Web Console
+        BPHC CS F213 OOP Project (2026–2027) &bull; Intelligent IT Service Management System &bull; Web Console
       </footer>
     </div>
   );

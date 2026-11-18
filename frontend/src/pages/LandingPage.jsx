@@ -315,7 +315,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-slate-950 border-t border-slate-800 py-8 text-center text-xs text-slate-500">
-        <p>BPHC CS F213 / MAC F212 OOP Project (Semester-I, 2026–2027) &bull; Intelligent IT Service Management System</p>
+        <p>BPHC CS F213 OOP Project (Semester-I, 2026–2027) &bull; Intelligent IT Service Management System</p>
         <p className="mt-1 text-slate-600">Cross-Platform Distribution: Windows Desktop, Android Mobile & Cloud Web</p>
       </footer>
     </div>
