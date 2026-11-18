@@ -1,5 +1,6 @@
 package com.iitsm.duplicate;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -8,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Primary
 public class TextSimilarityService implements SimilarityStrategy{
 
     private static final Set<String> STOP_WORDS = Set.of(

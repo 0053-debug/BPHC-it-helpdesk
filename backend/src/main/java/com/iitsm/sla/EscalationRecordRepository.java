@@ -10,4 +10,6 @@ public interface EscalationRecordRepository extends JpaRepository<EscalationReco
     Optional<EscalationRecord> findTopByIncidentIdOrderByEscalatedAtDesc(Long incidentId);
 
     List<EscalationRecord> findByIncidentIdOrderByEscalatedAtAsc(Long incidentId);
+
+    boolean existsByIncidentIdAndLevel(Long incidentId, EscalationLevel level);
 }

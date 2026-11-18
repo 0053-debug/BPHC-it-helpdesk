@@ -1,5 +1,8 @@
 package com.iitsm.duplicate;
 
-import java.util.List;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
-public record DuplicateCheckRequest(String description, List<DuplicateCandidate> candidates) {}
+public record DuplicateCheckRequest(@NotBlank String title, @NotBlank String description,
+                                    @NotNull @Positive Long serviceId) {}

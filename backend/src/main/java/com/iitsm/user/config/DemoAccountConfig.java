@@ -4,6 +4,7 @@ import com.iitsm.core.enums.AvailabilityStatus;
 import com.iitsm.core.enums.UserRole;
 import com.iitsm.core.model.Technician;
 import com.iitsm.core.model.User;
+import com.iitsm.core.model.Employee;
 import com.iitsm.user.repository.UserRepository;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,6 +29,7 @@ public class DemoAccountConfig {
             saveUser(environment, userRepository, passwordEncoder, "DEMO_ADMIN", UserRole.ROLE_ADMIN);
             saveUser(environment, userRepository, passwordEncoder, "DEMO_TEAM_LEAD", UserRole.ROLE_TEAM_LEAD);
             saveUser(environment, userRepository, passwordEncoder, "DEMO_TECHNICIAN", UserRole.ROLE_TECHNICIAN);
+            saveUser(environment, userRepository, passwordEncoder, "DEMO_EMPLOYEE", UserRole.ROLE_EMPLOYEE);
         };
     }
 
@@ -60,6 +62,11 @@ public class DemoAccountConfig {
                     .status(AvailabilityStatus.AVAILABLE)
                     .build();
             userRepository.save(technician);
+        } else if (role == UserRole.ROLE_EMPLOYEE) {
+            Employee employee = Employee.builder()
+                    .fullName(fullName).email(email).passwordHash(passwordEncoder.encode(password))
+                    .role(role).build();
+            userRepository.save(employee);
         } else {
             User user = User.builder()
                     .fullName(fullName)

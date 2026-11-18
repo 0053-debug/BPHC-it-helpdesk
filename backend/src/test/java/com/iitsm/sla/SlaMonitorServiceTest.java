@@ -49,11 +49,11 @@ class SlaMonitorServiceTest {
     }
 
     @Test
-    void warningIsRaisedOnceAtEightyPercent() {
+    void warningIsRaisedOnceAtSeventyFivePercent() {
         when(source.findOpenIncidents()).thenReturn(List.of(p1Incident(1L, created.plusMinutes(1))));
 
-        monitor.check(created.plusMinutes(25));
-        monitor.check(created.plusMinutes(26));
+        monitor.check(created.plusMinutes(23));
+        monitor.check(created.plusMinutes(24));
 
         ArgumentCaptor<SlaAlertEvent> captor = ArgumentCaptor.forClass(SlaAlertEvent.class);
         verify(publisher, times(1)).publishEvent(captor.capture());

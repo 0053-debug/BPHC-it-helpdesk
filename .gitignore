@@ -10,6 +10,7 @@ frontend/dist/
 .env
 *.env
 *.env.*
+!.env.example
 set-env.ps1
 backend/set-env.ps1
 *firebase*.json

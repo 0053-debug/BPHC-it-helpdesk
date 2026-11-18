@@ -44,7 +44,7 @@ public class JdbcIncidentWorkloadProvider implements IncidentWorkloadProvider {
             return workloads;
         } catch (DataAccessException exception) {
             throw new IncidentWorkloadUnavailableException(
-                    "Technician workload requires the shared incidents table; integrate Person 1's Incident persistence first",
+                    "Technician workload requires the shared incidents table; incident persistence must be integrated first",
                     exception);
         }
     }

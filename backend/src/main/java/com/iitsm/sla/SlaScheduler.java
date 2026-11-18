@@ -20,9 +20,9 @@ public class SlaScheduler {
         this.escalation = escalation;
     }
 
-    @Scheduled(fixedDelayString = "${sla.monitor.interval-ms:30000}")
+    @Scheduled(fixedDelayString = "${sla.monitor.interval-ms:60000}")
     public void run() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(java.time.Clock.systemUTC());
         try {
             monitor.check(now);
             escalation.check(now);

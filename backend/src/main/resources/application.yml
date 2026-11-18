@@ -32,7 +32,11 @@ spring:
 
   sql:
     init:
-      mode: ${SPRING_SQL_INIT_MODE:never}
+      mode: ${SPRING_SQL_INIT_MODE:always}
+
+sla:
+  monitor:
+    interval-ms: ${SLA_MONITOR_INTERVAL_MS:60000}
 
   mail:
     host: ${SPRING_MAIL_HOST:sandbox.smtp.mailtrap.io}
@@ -48,6 +52,9 @@ spring:
 
 # Security & JWT
 app:
+  sla:
+    monitor:
+      interval-ms: ${SLA_MONITOR_INTERVAL_MS:60000}
   jwt:
     secret: ${JWT_SECRET:}
     expiration-ms: 86400000 # 24 hours

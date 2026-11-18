@@ -4,7 +4,7 @@
 INSERT INTO services (id, name, code, description, criticality_factor, base_sla_weight, status, baseline_mttr_minutes)
 VALUES
     (1, 'Central Authentication (SSO / LDAP)', 'SRV-AUTH', 'Single Sign-On and Directory Services', 2.00, 4, 'OPERATIONAL', 30),
-    (2, 'Corporate Network & VPN', 'SRV-NET', 'Campus Wi-Fi, Ethernet, and Remote Access VPN', 1.75, 3, 'OPERATIONAL', 45),
+    (2, 'Corporate Network & VPN', 'SRV-NET', 'Campus Wi-Fi, Ethernet, and Remote Access VPN', 2.00, 3, 'OPERATIONAL', 45),
     (3, 'Database Cluster (PostgreSQL)', 'SRV-DB', 'Enterprise relational persistence cluster', 2.00, 4, 'OPERATIONAL', 30),
     (4, 'Enterprise ERP & Student Portal', 'SRV-ERP', 'Academic and administrative ERP platform', 1.50, 2, 'OPERATIONAL', 60),
     (5, 'Cloud Storage & File Share', 'SRV-STORE', 'Enterprise file storage and cloud backup', 1.25, 1, 'OPERATIONAL', 120),
@@ -32,16 +32,5 @@ VALUES
     (4, 'P4_LOW', 240, 1440)
 ON CONFLICT (id) DO NOTHING;
 
--- 4. Seed Users (passwords are 'password123' hashed with BCrypt)
--- Hash: $2a$10$7EqJtq98hPqEX7fNZaFWoO.8/kfv8c/41f87kZ8x6ZgK1lW9N4X0G (or standard mock)
-INSERT INTO users (id, full_name, email, password_hash, role, active, skills, max_workload, status, department)
-VALUES
-    (1, 'Admin User', 'admin@bphc.edu', '$2a$10$wT8K.uP9Z17G4C3K5N2G7uB6.hF8uC8x7.Z5.uG4.x9u.v7G9K3a.', 'ROLE_ADMIN', true, 'ADMIN,GOVERNANCE', 10, 'AVAILABLE', 'IT Services'),
-    (2, 'Team Lead', 'lead@bphc.edu', '$2a$10$wT8K.uP9Z17G4C3K5N2G7uB6.hF8uC8x7.Z5.uG4.x9u.v7G9K3a.', 'ROLE_TEAM_LEAD', true, 'NETWORK,SECURITY,DATABASE', 8, 'AVAILABLE', 'IT Support'),
-    (3, 'Alex Network Tech', 'alex.tech@bphc.edu', '$2a$10$wT8K.uP9Z17G4C3K5N2G7uB6.hF8uC8x7.Z5.uG4.x9u.v7G9K3a.', 'ROLE_TECHNICIAN', true, 'NETWORK,HARDWARE', 5, 'AVAILABLE', 'Network Operations'),
-    (4, 'Sarah Database Tech', 'sarah.tech@bphc.edu', '$2a$10$wT8K.uP9Z17G4C3K5N2G7uB6.hF8uC8x7.Z5.uG4.x9u.v7G9K3a.', 'ROLE_TECHNICIAN', true, 'DATABASE,STORAGE', 5, 'AVAILABLE', 'Database Operations'),
-    (5, 'John Security Tech', 'john.tech@bphc.edu', '$2a$10$wT8K.uP9Z17G4C3K5N2G7uB6.hF8uC8x7.Z5.uG4.x9u.v7G9K3a.', 'ROLE_TECHNICIAN', true, 'SECURITY,AUTHENTICATION', 5, 'AVAILABLE', 'InfoSec'),
-    (6, 'Priya Employee', 'priya.emp@bphc.edu', '$2a$10$wT8K.uP9Z17G4C3K5N2G7uB6.hF8uC8x7.Z5.uG4.x9u.v7G9K3a.', 'ROLE_EMPLOYEE', true, null, null, 'AVAILABLE', 'Computer Science')
-ON CONFLICT (id) DO NOTHING;
-
-SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+-- Demo users are intentionally not seeded with fixed credentials. Enable the
+-- environment-configured DemoAccountConfig only for a local presentation.

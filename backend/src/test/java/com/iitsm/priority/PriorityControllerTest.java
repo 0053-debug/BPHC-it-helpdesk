@@ -27,7 +27,7 @@ class PriorityControllerTest {
 
     @Test
     void calculatesCriticalPriorityForTheWorstCase() throws Exception {
-        String body = "{\"impact\":\"ORGANIZATION_WIDE\",\"urgency\":\"CRITICAL\",\"businessCriticality\":5}";
+        String body = "{\"impact\":\"ORGANIZATION_WIDE\",\"urgency\":\"CRITICAL\",\"criticalityFactor\":2.0,\"serviceWeight\":4}";
 
         mvc.perform(post("/api/priority/calculate")
                         .contentType(MediaType.APPLICATION_JSON).content(body))
@@ -37,7 +37,7 @@ class PriorityControllerTest {
 
     @Test
     void calculatesLowPriorityForTheLeastSevereCase() throws Exception {
-        String body = "{\"impact\":\"INDIVIDUAL\",\"urgency\":\"LOW\",\"businessCriticality\":1}";
+        String body = "{\"impact\":\"INDIVIDUAL\",\"urgency\":\"LOW\",\"criticalityFactor\":1.0,\"serviceWeight\":0}";
 
         mvc.perform(post("/api/priority/calculate")
                         .contentType(MediaType.APPLICATION_JSON).content(body))
@@ -48,6 +48,6 @@ class PriorityControllerTest {
     @Test
     void criticalityOutOfRangeIsRejectedAsABadRequest() {
         assertThrows(IitsmException.class, () -> controller.calculate(
-                new PriorityController.PriorityRequest(Impact.INDIVIDUAL, Urgency.LOW, 9)));
+                new PriorityController.PriorityRequest(Impact.INDIVIDUAL, Urgency.LOW, java.math.BigDecimal.valueOf(3), 0)));
     }
 }

@@ -3,7 +3,7 @@
 -- Compatible with PostgreSQL 13+
 -- =========================================================================
 
--- 1. Services & Service Catalog (Person 4)
+-- 1. Services & Service Catalog
 CREATE TABLE IF NOT EXISTS services (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL UNIQUE,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS services (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Service Dependencies (Upstream / Downstream Mapping) (Person 4 Innovation Challenge)
+-- Service Dependencies (Upstream / Downstream Mapping)
 CREATE TABLE IF NOT EXISTS service_dependencies (
     service_id BIGINT NOT NULL REFERENCES services(id) ON DELETE CASCADE,
     depends_on_service_id BIGINT NOT NULL REFERENCES services(id) ON DELETE CASCADE,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS service_dependencies (
     CONSTRAINT chk_no_self_dependency CHECK (service_id <> depends_on_service_id)
 );
 
--- 2. Audit Trail (Person 4)
+-- 2. Audit Trail
 CREATE TABLE IF NOT EXISTS audit_logs (
     id BIGSERIAL PRIMARY KEY,
     incident_id BIGINT,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 -- PostgreSQL Immutability Trigger for Audit Trail is registered in AuditTrailDbInitializer
--- 3. Notifications (Person 4)
+-- 3. Notifications
 CREATE TABLE IF NOT EXISTS notifications (
     id BIGSERIAL PRIMARY KEY,
     recipient_id BIGINT NOT NULL,
@@ -53,13 +53,14 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Shared User Entity Scaffold (Person 2)
+-- 4. Shared User Entity
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     full_name VARCHAR(150) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL,    -- ROLE_EMPLOYEE, ROLE_TECHNICIAN, ROLE_TEAM_LEAD, ROLE_ADMIN
+    user_type VARCHAR(31) NOT NULL DEFAULT 'User',
     active BOOLEAN NOT NULL DEFAULT TRUE,
     skills TEXT,                  -- Comma-separated or JSON list of skill tags for technicians
     max_workload INT DEFAULT 5,   -- Max concurrent tickets for technicians
@@ -69,7 +70,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 5. Shared SLA Policy Entity Scaffold (Person 3)
+-- 5. Shared SLA Policy Entity
 CREATE TABLE IF NOT EXISTS sla_policies (
     id BIGSERIAL PRIMARY KEY,
     priority VARCHAR(50) NOT NULL UNIQUE, -- P1_CRITICAL, P2_HIGH, P3_MEDIUM, P4_LOW
@@ -77,7 +78,7 @@ CREATE TABLE IF NOT EXISTS sla_policies (
     resolution_target_minutes INT NOT NULL
 );
 
--- 6. Shared Incident Entity Scaffold (Person 1)
+-- 6. Shared Incident Entity
 CREATE TABLE IF NOT EXISTS incidents (
     id BIGSERIAL PRIMARY KEY,
     tracking_number VARCHAR(100) NOT NULL UNIQUE,
@@ -88,9 +89,11 @@ CREATE TABLE IF NOT EXISTS incidents (
     urgency VARCHAR(50) NOT NULL,
     impact VARCHAR(50) NOT NULL,
     priority VARCHAR(50) NOT NULL DEFAULT 'P4_LOW',
+    priority_score NUMERIC(8, 2),
     status VARCHAR(50) NOT NULL DEFAULT 'NEW',
     reporter_id BIGINT REFERENCES users(id),
     assigned_technician_id BIGINT REFERENCES users(id),
+    assigned_at TIMESTAMP WITH TIME ZONE,
     primary_incident_id BIGINT REFERENCES incidents(id), -- For duplicates
     is_potential_duplicate BOOLEAN DEFAULT FALSE,
     sla_breached BOOLEAN DEFAULT FALSE,
@@ -100,6 +103,23 @@ CREATE TABLE IF NOT EXISTS incidents (
     resolved_at TIMESTAMP WITH TIME ZONE,
     closed_at TIMESTAMP WITH TIME ZONE,
     resolution_notes TEXT,
+    root_cause TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS incident_comments (
+    id BIGSERIAL PRIMARY KEY,
+    incident_id BIGINT NOT NULL REFERENCES incidents(id),
+    author_id BIGINT NOT NULL REFERENCES users(id),
+    message TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS sla_warnings (
+    id BIGSERIAL PRIMARY KEY,
+    incident_id BIGINT NOT NULL REFERENCES incidents(id),
+    violation_type VARCHAR(30) NOT NULL,
+    recorded_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_sla_warning UNIQUE (incident_id, violation_type)
 );

@@ -2,91 +2,82 @@ package com.iitsm.sla;
 
 import com.iitsm.core.enums.Priority;
 import com.iitsm.core.model.SLAPolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import com.iitsm.events.IncidentEvent;
+import com.iitsm.events.IncidentEventPublisher;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class EscalationService {
-
-    private static final Logger log = LoggerFactory.getLogger(EscalationService.class);
-
-    // Only critical and high priority incidents are escalated automatically
-    private static final Set<Priority> ESCALATED_PRIORITIES =
-            Set.of(Priority.P1_CRITICAL, Priority.P2_HIGH);
-
     private final SlaIncidentSource source;
     private final SLAPolicyResolver resolver;
     private final SLAService slaService;
     private final EscalationRecordRepository records;
     private final ApplicationEventPublisher publisher;
-    private final long intervalMinutes;
+    private final JdbcTemplate jdbc;
+    private final IncidentEventPublisher incidentEvents;
 
-    public EscalationService(SlaIncidentSource source,
-                             SLAPolicyResolver resolver,
-                             SLAService slaService,
-                             EscalationRecordRepository records,
-                             ApplicationEventPublisher publisher,
-                             @Value("${escalation.interval-minutes:10}") long intervalMinutes) {
-        this.source = source;
-        this.resolver = resolver;
-        this.slaService = slaService;
-        this.records = records;
-        this.publisher = publisher;
-        this.intervalMinutes = intervalMinutes;
+    @Autowired
+    public EscalationService(SlaIncidentSource source, SLAPolicyResolver resolver, SLAService slaService,
+                             EscalationRecordRepository records, ApplicationEventPublisher publisher,
+                             JdbcTemplate jdbc, IncidentEventPublisher incidentEvents) {
+        this.source = source; this.resolver = resolver; this.slaService = slaService;
+        this.records = records; this.publisher = publisher; this.jdbc = jdbc; this.incidentEvents = incidentEvents;
     }
 
+    public EscalationService(SlaIncidentSource source, SLAPolicyResolver resolver, SLAService slaService,
+                             EscalationRecordRepository records, ApplicationEventPublisher publisher, long ignoredLegacyInterval) {
+        this(source, resolver, slaService, records, publisher, null, null);
+    }
+
+    @Transactional
     public void check(LocalDateTime now) {
         for (SlaTrackedIncident incident : source.findOpenIncidents()) {
-            try {
-                checkOne(incident, now);
-            } catch (SlaNotConfiguredException e) {
-                log.warn("Skipping escalation for incident {}: {}", incident.id(), e.getMessage());
+            if (incident.priority() != Priority.P1_CRITICAL) continue;
+            SLAPolicy policy;
+            try { policy = resolver.resolve(incident.priority()); }
+            catch (SlaNotConfiguredException ignored) { continue; }
+
+            if (incident.assignedAt() != null && incident.acknowledgedAt() == null
+                    && !now.isBefore(incident.assignedAt().plusMinutes(5))
+                    && !records.existsByIncidentIdAndLevel(incident.id(), EscalationLevel.TEAM_LEAD)) {
+                escalate(incident.id(), EscalationLevel.TEAM_LEAD,
+                        "P1 incident was not acknowledged within five minutes of assignment", now);
+            }
+
+            LocalDateTime resolutionDeadline = slaService.resolutionDeadline(incident.createdAt(), policy);
+            LocalDateTime escalationAt = incident.createdAt().plusNanos(
+                    java.time.Duration.between(incident.createdAt(), resolutionDeadline).toNanos() * 3 / 4);
+            if (incident.resolvedAt() == null && !now.isBefore(escalationAt)
+                    && !records.existsByIncidentIdAndLevel(incident.id(), EscalationLevel.SYSTEM_ADMIN)) {
+                escalate(incident.id(), EscalationLevel.SYSTEM_ADMIN,
+                        "P1 incident reached 75% of its resolution SLA without resolution", now);
             }
         }
     }
 
-    private void checkOne(SlaTrackedIncident incident, LocalDateTime now) {
-        if (!ESCALATED_PRIORITIES.contains(incident.priority()) || incident.acknowledgedAt() != null) {
-            return;
+    private void escalate(Long incidentId, EscalationLevel level, String reason, LocalDateTime now) {
+        records.save(EscalationRecord.builder().incidentId(incidentId).level(level).escalatedAt(now).reason(reason).build());
+        publisher.publishEvent(new EscalationEvent(incidentId, level, reason, now));
+        if (jdbc != null && incidentEvents != null) {
+            var incident = jdbc.queryForMap("SELECT tracking_number,title,status,reporter_id,assigned_technician_id FROM incidents WHERE id=?", incidentId);
+            String recipientRole = level == EscalationLevel.TEAM_LEAD ? "ROLE_TEAM_LEAD" : "ROLE_ADMIN";
+            jdbc.query("SELECT id,email FROM users WHERE role=? AND active=TRUE ORDER BY id LIMIT 1", rs -> {
+                if (rs.next()) incidentEvents.publishEvent(IncidentEvent.builder()
+                        .eventType("INCIDENT_ESCALATED").incidentId(incidentId)
+                        .trackingNumber((String) incident.get("tracking_number"))
+                        .actorName("SLA Monitor").actorRole("SYSTEM").action("INCIDENT_ESCALATED")
+                        .previousState((String) incident.get("status")).newState((String) incident.get("status"))
+                        .title((String) incident.get("title")).description(reason)
+                        .recipientId(rs.getLong("id")).recipientEmail(rs.getString("email"))
+                        .timestamp(now.toInstant(java.time.ZoneOffset.UTC)).build());
+                return null;
+            }, recipientRole);
         }
-        SLAPolicy policy = resolver.resolve(incident.priority());
-        LocalDateTime responseDue = slaService.responseDeadline(incident.createdAt(), policy);
-        if (!now.isAfter(responseDue)) {
-            return;
-        }
-
-        Optional<EscalationRecord> last = records.findTopByIncidentIdOrderByEscalatedAtDesc(incident.id());
-        Optional<EscalationLevel> next;
-        if (last.isEmpty()) {
-            // Every incident starts at TECHNICIAN, so the first escalation goes to TEAM_LEAD
-            next = EscalationLevel.TECHNICIAN.next();
-        } else if (now.isBefore(last.get().getEscalatedAt().plusMinutes(intervalMinutes))) {
-            return;
-        } else {
-            next = last.get().getLevel().next();
-        }
-
-        if (next.isEmpty()) {
-            return; // already at the top of the chain
-        }
-        escalate(incident, next.get(), now);
-    }
-
-    private void escalate(SlaTrackedIncident incident, EscalationLevel level, LocalDateTime now) {
-        String reason = "Not acknowledged within the response target";
-        records.save(EscalationRecord.builder()
-                .incidentId(incident.id())
-                .level(level)
-                .escalatedAt(now)
-                .reason(reason)
-                .build());
-        publisher.publishEvent(new EscalationEvent(incident.id(), level, reason, now));
     }
 }

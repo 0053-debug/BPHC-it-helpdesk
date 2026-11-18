@@ -10,14 +10,14 @@ import java.util.List;
 @Service
 public class DuplicateDetectionService {
 
-    // Cap on comparisons per request, so one check cannot trigger hundreds of API calls
+    // Bound per-request work for predictable response times.
     static final int MAX_CANDIDATES = 20;
 
     private final SimilarityStrategy similarity;
     private final double defaultThreshold;
 
     public DuplicateDetectionService(SimilarityStrategy similarity,
-                                     @Value("${duplicate.threshold:0.75}") double defaultThreshold) {
+                                     @Value("${duplicate.threshold:0.80}") double defaultThreshold) {
         this.similarity = similarity;
         this.defaultThreshold = defaultThreshold;
     }

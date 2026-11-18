@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Intelligent Rule-Based Bottleneck and Anomaly Detection Engine (Person 4 Intelligent Feature).
+ * Rule-based bottleneck and anomaly detection for service operations.
  * Evaluates SLA breach rates, MTTR inflation, recurring category spikes, and technician saturation.
  */
 @Component

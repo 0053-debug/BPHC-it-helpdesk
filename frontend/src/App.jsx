@@ -3,10 +3,8 @@ import {
   LayoutDashboard,
   Server,
   Shield,
-  Bell,
   Cpu,
   Download,
-  Home,
   Users,
   LogIn,
   UserPlus,
@@ -20,6 +18,7 @@ import NotificationBell from './components/NotificationBell';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import TechnicianDirectoryPage from './pages/TechnicianDirectoryPage';
+import IncidentWorkspacePage from './pages/IncidentWorkspacePage';
 
 function readStoredUser() {
   const storedUser = localStorage.getItem('iitsm_user');
@@ -38,12 +37,13 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(readStoredUser);
   const isManager = currentUser && ['ROLE_ADMIN', 'ROLE_TEAM_LEAD'].includes(currentUser.role);
   const isAdmin = currentUser?.role === 'ROLE_ADMIN';
+  const isEmployee = currentUser?.role === 'ROLE_EMPLOYEE';
 
   const handleAuthenticated = (response) => {
     localStorage.setItem('iitsm_token', response.accessToken);
     localStorage.setItem('iitsm_user', JSON.stringify(response.user));
     setCurrentUser(response.user);
-    setActiveTab('technicians');
+    setActiveTab(response.user.role === 'ROLE_EMPLOYEE' ? 'incidents' : 'technicians');
   };
 
   const logout = () => {
@@ -56,7 +56,7 @@ export default function App() {
   if (activeTab === 'landing') {
     return (
       <LandingPage
-        onLaunchApp={() => setActiveTab(currentUser ? (isManager ? 'dashboard' : 'technicians') : 'login')}
+        onLaunchApp={() => setActiveTab(currentUser ? (isEmployee ? 'incidents' : isManager ? 'dashboard' : 'technicians') : 'login')}
         onLogin={() => setActiveTab('login')}
         onRegister={() => setActiveTab('register')}
       />
@@ -80,7 +80,7 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base tracking-tight text-slate-900">BPHC I-ITSM</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 tracking-wide">
-                  PERSON 4
+                  ITSM
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-medium">Service Desk, Notifications & Operational Analytics</p>
@@ -98,6 +98,13 @@ export default function App() {
             </button>
 
             {currentUser && (
+              <button
+                onClick={() => setActiveTab('incidents')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'incidents' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-100'}`}
+              >{isEmployee ? 'My incidents' : 'Incidents'}</button>
+            )}
+
+            {currentUser && !isEmployee && (
               <button
                 onClick={() => setActiveTab('technicians')}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
@@ -194,6 +201,7 @@ export default function App() {
           />
         )}
         {activeTab === 'technicians' && currentUser && <TechnicianDirectoryPage currentUser={currentUser} />}
+        {activeTab === 'incidents' && currentUser && <IncidentWorkspacePage currentUser={currentUser} />}
         {activeTab === 'dashboard' && <ItManagerDashboardPage />}
         {activeTab === 'services' && <ServiceManagementPage />}
         {activeTab === 'audit' && <AuditLogsPage />}

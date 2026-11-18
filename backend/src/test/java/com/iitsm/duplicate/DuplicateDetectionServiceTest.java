@@ -14,7 +14,7 @@ import static org.mockito.Mockito.*;
 class DuplicateDetectionServiceTest {
 
     private final SimilarityStrategy strategy = mock(SimilarityStrategy.class);
-    private final DuplicateDetectionService service = new DuplicateDetectionService(strategy, 0.75);
+    private final DuplicateDetectionService service = new DuplicateDetectionService(strategy, 0.80);
 
     @Test
     void returnsOnlyMatchesAboveThresholdSortedByScore() {

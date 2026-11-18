@@ -3,8 +3,9 @@ package com.iitsm.duplicate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import com.iitsm.incident.service.IncidentService;
 
 import java.util.List;
 
@@ -12,18 +13,14 @@ import java.util.List;
 @RequestMapping("/api/duplicates")
 public class DuplicateController {
 
-    private final DuplicateDetectionService service;
+    private final IncidentService service;
 
-    public DuplicateController(DuplicateDetectionService service) {
+    public DuplicateController(IncidentService service) {
         this.service = service;
     }
 
     @PostMapping("/check")
-    public List<DuplicateMatch> check(@RequestBody DuplicateCheckRequest request,
-                                      @RequestParam(required = false) Double threshold) {
-        if (threshold == null) {
-            return service.findDuplicates(request.description(), request.candidates());
-        }
-        return service.findDuplicates(request.description(), request.candidates(), threshold);
+    public List<DuplicateMatch> check(@Valid @RequestBody DuplicateCheckRequest request) {
+        return service.checkDuplicates(request.serviceId(), request.title(), request.description());
     }
 }

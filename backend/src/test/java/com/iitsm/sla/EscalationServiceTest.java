@@ -36,7 +36,7 @@ class EscalationServiceTest {
     }
 
     private SlaTrackedIncident p1Incident(LocalDateTime acknowledgedAt) {
-        return new SlaTrackedIncident(1L, Priority.P1_CRITICAL, created, acknowledgedAt, null);
+        return new SlaTrackedIncident(1L, Priority.P1_CRITICAL, created, acknowledgedAt, null, created);
     }
 
     private EscalationRecord record(EscalationLevel level, LocalDateTime at) {
@@ -71,8 +71,7 @@ class EscalationServiceTest {
     @Test
     void noSecondEscalationInsideTheInterval() {
         when(source.findOpenIncidents()).thenReturn(List.of(p1Incident(null)));
-        when(records.findTopByIncidentIdOrderByEscalatedAtDesc(1L)).thenReturn(
-                Optional.of(record(EscalationLevel.TEAM_LEAD, created.plusMinutes(6))));
+        when(records.existsByIncidentIdAndLevel(1L, EscalationLevel.TEAM_LEAD)).thenReturn(true);
 
         service.check(created.plusMinutes(10));
 
@@ -80,12 +79,11 @@ class EscalationServiceTest {
     }
 
     @Test
-    void escalatesOneLevelHigherAfterTheInterval() {
+    void unresolvedIncidentEscalatesToAdministratorAtSeventyFivePercent() {
         when(source.findOpenIncidents()).thenReturn(List.of(p1Incident(null)));
-        when(records.findTopByIncidentIdOrderByEscalatedAtDesc(1L)).thenReturn(
-                Optional.of(record(EscalationLevel.TEAM_LEAD, created.plusMinutes(6))));
+        when(records.existsByIncidentIdAndLevel(1L, EscalationLevel.TEAM_LEAD)).thenReturn(true);
 
-        service.check(created.plusMinutes(17));
+        service.check(created.plusMinutes(23));
 
         ArgumentCaptor<EscalationRecord> saved = ArgumentCaptor.forClass(EscalationRecord.class);
         verify(records).save(saved.capture());
@@ -95,8 +93,8 @@ class EscalationServiceTest {
     @Test
     void stopsAtTheTopOfTheChain() {
         when(source.findOpenIncidents()).thenReturn(List.of(p1Incident(null)));
-        when(records.findTopByIncidentIdOrderByEscalatedAtDesc(1L)).thenReturn(
-                Optional.of(record(EscalationLevel.IT_MANAGER, created.plusMinutes(6))));
+        when(records.existsByIncidentIdAndLevel(1L, EscalationLevel.TEAM_LEAD)).thenReturn(true);
+        when(records.existsByIncidentIdAndLevel(1L, EscalationLevel.SYSTEM_ADMIN)).thenReturn(true);
 
         service.check(created.plusMinutes(60));
 
@@ -107,7 +105,7 @@ class EscalationServiceTest {
     void acknowledgedIncidentIsNotEscalated() {
         when(source.findOpenIncidents()).thenReturn(List.of(p1Incident(created.plusMinutes(2))));
 
-        service.check(created.plusMinutes(30));
+        service.check(created.plusMinutes(20));
 
         verify(records, never()).save(any());
     }

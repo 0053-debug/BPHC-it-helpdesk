@@ -8,4 +8,10 @@ public record SlaTrackedIncident(Long id,
                                  Priority priority,
                                  LocalDateTime createdAt,
                                  LocalDateTime acknowledgedAt,
-                                 LocalDateTime resolvedAt) {}
+                                 LocalDateTime resolvedAt,
+                                 LocalDateTime assignedAt) {
+    public SlaTrackedIncident(Long id, Priority priority, LocalDateTime createdAt,
+                              LocalDateTime acknowledgedAt, LocalDateTime resolvedAt) {
+        this(id, priority, createdAt, acknowledgedAt, resolvedAt, null);
+    }
+}
