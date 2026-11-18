@@ -1,66 +1,108 @@
-# Website and app builds
+# Free-tier deployment
 
-The release is **I-ITSM 1.1.0**. The browser app is a Firebase Hosting single-page
-site; `/api` and `/ws-iitsm` are rewritten to the `iitsm-api` Cloud Run service.
-The Spring Boot API uses PostgreSQL, so Hosting alone is not a complete live
-deployment.
+The v1.1.0 stack uses Firebase Hosting for the static React/PWA site, Render's
+free Docker web service for the Spring Boot API, and Neon for managed PostgreSQL.
+Firebase Hosting serves the browser app directly. The app calls the API and
+WebSocket endpoint on Render, so Hosting does not need a Cloud Run rewrite.
 
-## Cloud services setup
+This setup is intended for coursework, demos, and low traffic. Render free web
+services sleep after 15 minutes without incoming requests and can take about a
+minute to wake. Neon free projects have monthly compute and storage limits. The
+SLA monitor only runs while the Render API is awake. Do not use this configuration
+for a production service that requires continuous monitoring or uptime guarantees.
+Render's own free PostgreSQL expires after 30 days, so use Neon for the database.
 
-The Firebase project is `bphc-it-helpdesk`; Hosting uses
-`https://bphc-it-helpdesk.web.app`. Hosting configuration is in `firebase.json`.
-The backend container is in `backend/Dockerfile` and the manual GitHub Actions
-workflow `.github/workflows/deploy-backend.yml` deploys it to Cloud Run in
-`asia-south1`.
+## 1. Create the Neon database
 
-Before deploying the API, create these Secret Manager secrets in the Google
-Cloud project and grant the Cloud Run runtime service account access to them:
+Create a PostgreSQL project in Neon and choose the Singapore region to match the
+Render API. Use the pooled connection option if the Neon console offers it. Keep
+the connection details private. Configure Render with these environment values:
 
-- `SPRING_DATASOURCE_URL` — JDBC URL for a reachable PostgreSQL database.
+- `SPRING_DATASOURCE_URL` — JDBC URL such as
+  `jdbc:postgresql://HOST/DB_NAME?sslmode=require`.
 - `SPRING_DATASOURCE_USERNAME`
 - `SPRING_DATASOURCE_PASSWORD`
-- `JWT_SECRET` — a randomly generated secret of at least 32 bytes.
+- `JWT_SECRET` — a random secret with at least 32 bytes of entropy.
 
-The GitHub repository needs a `GCP_SERVICE_ACCOUNT_KEY` Actions secret containing
-service account credentials authorized to build and deploy Cloud Run and use
-those Secret Manager values. Configure the Firebase deploy credential as the
-`FIREBASE_TOKEN` Actions secret. Then run **Deploy API to Cloud Run** followed by
-**Deploy Firebase Hosting** from the Actions tab. These workflows are manual so
-an ordinary source push does not publish a release. The Hosting deployment
-expects the `iitsm-api` Cloud Run service to exist first.
+The application initializes its schema and sample services/SLA policies when the
+API starts. Sign-up creates employee accounts; no production credentials are
+seeded.
 
-The current Firebase project does not have a Cloud Billing account attached.
-Google therefore blocks enabling Cloud Run and its image registry APIs, so the
-live Hosting deploy cannot be finalized yet. Attach a billing account to the
-project, create the PostgreSQL database and secrets above, deploy the API, then
-deploy Hosting. The application itself can remain within free quotas, but Cloud
-Run and the database may incur charges depending on use and provider settings.
+## 2. Deploy the API to Render
 
-## Desktop and Android packages
+1. Create a Render account and connect the GitHub repository
+   `0053-debug/BPHC-it-helpdesk`.
+2. Choose **New > Blueprint** and select this repository. Render reads
+   `render.yaml` and creates the `bphc-iitsm-api` free web service in Singapore.
+3. When prompted, enter the four environment values above. You can also edit them
+   later under the service's **Environment** page. Never add them to GitHub or
+   the source tree.
+4. Wait for the first deploy to finish, then copy the service URL. It will look
+   like `https://bphc-iitsm-api.onrender.com`.
 
-Push a `v1.1.0` tag to run `.github/workflows/release-apps.yml`. It builds a
-Windows NSIS installer, a universal macOS DMG, and an Android APK, then attaches
-them to a GitHub Release. The Firebase landing page links to those release
-assets. Windows and macOS installers are unsigned; the operating systems may
-show an installation warning. The Android APK is debug-signed for evaluation
-and sideloading, not Play Store publication.
+The web service listens on Render's `PORT` setting. The Docker image is built
+from `backend/Dockerfile`; later pushes to `main` trigger a redeploy.
 
-On iPhone/iPad, visit the Hosting website in Safari, choose **Share**, and tap
-**Add to Home Screen**. The site is a PWA with an app icon and standalone
-display. A distributable iOS IPA or App Store listing requires Apple Developer
-signing credentials and provisioning, which are not stored in this repository.
-Native Android and iOS project shells are included in `frontend/`. Run
-`npm run cap:sync` before opening Android Studio or Xcode. Open the iOS project
-on a Mac with Xcode when signed iOS distribution is configured.
+## 3. Point the frontend at Render
 
-## Local development
+The source defaults to `https://bphc-iitsm-api.onrender.com`. If Render assigns a
+different URL, add these repository variables under GitHub **Settings > Secrets
+and variables > Actions > Variables**:
 
-Run the backend and frontend as described in the root README. The browser uses
-Vite's `/api` and `/ws-iitsm` development proxies. To launch the desktop shell,
-run `npm run electron:dev` from `frontend/`. To prepare native project files,
-run `npm run cap:init:android` or `npm run cap:init:ios` once to generate a
-native project, then use `npm run cap:sync` and open it with Android Studio or
-Xcode.
+- `VITE_API_BASE_URL` — `https://YOUR-RENDER-HOST/api`
+- `VITE_WS_BASE_URL` — `https://YOUR-RENDER-HOST`
 
-Never put database passwords, signing keys, Firebase service-account files, or
-JWT secrets in the repository or built frontend.
+These are public endpoint URLs, not secrets. The PWA build, desktop installer,
+and Android package workflows use the same values. The backend's CORS defaults
+already allow the Firebase web domains and Capacitor app origins.
+
+## 4. Deploy Firebase Hosting
+
+Firebase Hosting's Spark plan can serve this static site within its no-cost
+quotas. The Hosting configuration is in `firebase.json`; it contains only the
+single-page-app fallback and static asset headers.
+
+For an automated deploy, add `FIREBASE_TOKEN` under GitHub **Settings > Secrets
+and variables > Actions > Secrets**, then run **Deploy Firebase Hosting** from
+the repository's Actions tab. To generate the token, run
+`npx firebase-tools login:ci` on your computer and store its output directly
+in GitHub. This token is sensitive. Firebase currently labels this CI-token
+method as legacy.
+
+Alternatively, sign into the Firebase CLI locally and deploy from the repository
+root:
+
+```powershell
+npx --yes firebase-tools@latest login
+npx --yes firebase-tools@latest deploy --only hosting --project bphc-it-helpdesk
+```
+
+The live site URL is `https://bphc-it-helpdesk.web.app`. Downloadable desktop and
+Android builds are attached to the GitHub v1.1.0 release rather than stored on
+Firebase Hosting.
+
+## 5. First account
+
+Register through the site to create an employee account. If the project needs
+admin/technician dashboards, promote the initial trusted account through the
+Neon SQL editor, then sign out and sign in again:
+
+```sql
+UPDATE users
+SET role = 'ROLE_ADMIN'
+WHERE email = 'your-email@example.com';
+```
+
+Only grant that role to a trusted account. Do not enable demo accounts on a
+public deployment.
+
+## Limits and costs
+
+Firebase Hosting's Spark quotas cover the static site. Render's free API sleeps
+when idle, and Neon caps free database compute/storage. The first API request
+after sleep is slow, and automated SLA monitoring pauses while Render sleeps.
+Check each provider's current limits before relying on this for a live service.
+
+References: [Render free services](https://render.com/docs/free),
+[Neon free plan](https://neon.com/pricing), and
+[Firebase Hosting quotas](https://firebase.google.com/docs/hosting/usage-quotas-pricing).

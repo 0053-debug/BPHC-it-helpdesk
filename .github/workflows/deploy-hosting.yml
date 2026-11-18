@@ -23,8 +23,8 @@ jobs:
       - name: Build web app
         run: npm run build
         env:
-          VITE_API_BASE_URL: /api
-          VITE_WS_BASE_URL: https://bphc-it-helpdesk.web.app
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://bphc-iitsm-api.onrender.com/api' }}
+          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL || 'https://bphc-iitsm-api.onrender.com' }}
       - name: Deploy Hosting site
         working-directory: .
         run: npx --yes firebase-tools deploy --only hosting --project bphc-it-helpdesk --non-interactive

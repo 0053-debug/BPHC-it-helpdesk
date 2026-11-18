@@ -39,8 +39,8 @@ jobs:
           if [ "${{ matrix.platform }}" = "mac" ]; then npx electron-builder --mac dmg --universal --publish never; fi
         shell: bash
         env:
-          VITE_API_BASE_URL: https://bphc-it-helpdesk.web.app/api
-          VITE_WS_BASE_URL: https://bphc-it-helpdesk.web.app
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://bphc-iitsm-api.onrender.com/api' }}
+          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL || 'https://bphc-iitsm-api.onrender.com' }}
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.platform }}
@@ -66,8 +66,8 @@ jobs:
       - run: npm ci
       - name: Build Android package
         env:
-          VITE_API_BASE_URL: https://bphc-it-helpdesk.web.app/api
-          VITE_WS_BASE_URL: https://bphc-it-helpdesk.web.app
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://bphc-iitsm-api.onrender.com/api' }}
+          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL || 'https://bphc-iitsm-api.onrender.com' }}
         run: |
           npm run build
           npx cap sync android

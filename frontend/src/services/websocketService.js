@@ -3,7 +3,7 @@ import SockJS from 'sockjs-client';
 
 const webSocketBaseUrl = import.meta.env.VITE_WS_BASE_URL || (import.meta.env.DEV
   ? ''
-  : 'https://bphc-it-helpdesk.web.app');
+  : 'https://bphc-iitsm-api.onrender.com');
 
 class WebSocketService {
   constructor() {
@@ -19,11 +19,7 @@ class WebSocketService {
     }
 
     this.client = new Client({
-      // Hosting's Cloud Run rewrites accept HTTP methods; use SockJS polling
-      // rather than relying on WebSocket upgrade support through the CDN.
-      webSocketFactory: () => new SockJS(`${webSocketBaseUrl}/ws-iitsm`, null, {
-        transports: ['xhr-polling'],
-      }),
+      webSocketFactory: () => new SockJS(`${webSocketBaseUrl}/ws-iitsm`),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

@@ -16,6 +16,7 @@ frontend/release/
 set-env.ps1
 backend/set-env.ps1
 *firebase*.json
+!firebase.json
 *-service-account*.json
 *.pem
 *.key

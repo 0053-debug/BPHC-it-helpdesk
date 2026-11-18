@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV
   ? '/api'
-  : 'https://bphc-it-helpdesk.web.app/api');
+  : 'https://bphc-iitsm-api.onrender.com/api');
 
 const api = axios.create({
   baseURL: apiBaseUrl,
