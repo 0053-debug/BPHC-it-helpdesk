@@ -64,4 +64,4 @@ app:
     credentials-path: ${FIREBASE_CREDENTIALS_PATH:firebase-service-account.json}
     enabled: ${FIREBASE_ENABLED:false}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,https://bphc-it-helpdesk.web.app,https://bphc-it-helpdesk.firebaseapp.com,capacitor://localhost,https://localhost,http://localhost:*,http://127.0.0.1:*,iitsm://app}

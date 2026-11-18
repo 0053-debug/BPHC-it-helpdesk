@@ -44,6 +44,7 @@ The hard submission deadline stated in the brief is 22 November 2026.
 - [Architecture and UML diagrams](architecture-and-uml.md)
 - [Technology selection and security notes](technology-selection.md)
 - [Database design](database-design.md)
+- [Firebase and app deployment](deployment.md)
 - [Test plan and demo run of show](testing-and-demo.md)
 - [Development guidelines](development-guidelines.md)
 

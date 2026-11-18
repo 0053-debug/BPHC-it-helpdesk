@@ -1,6 +1,10 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
+const webSocketBaseUrl = import.meta.env.VITE_WS_BASE_URL || (import.meta.env.DEV
+  ? ''
+  : 'https://bphc-it-helpdesk.web.app');
+
 class WebSocketService {
   constructor() {
     this.client = null;
@@ -15,7 +19,11 @@ class WebSocketService {
     }
 
     this.client = new Client({
-      webSocketFactory: () => new SockJS('/ws-iitsm'),
+      // Hosting's Cloud Run rewrites accept HTTP methods; use SockJS polling
+      // rather than relying on WebSocket upgrade support through the CDN.
+      webSocketFactory: () => new SockJS(`${webSocketBaseUrl}/ws-iitsm`, null, {
+        transports: ['xhr-polling'],
+      }),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

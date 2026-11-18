@@ -9,6 +9,8 @@ prioritizing, assigning, and tracking internal IT incidents.
   security, and automated tests.
 - `frontend/` — React and Vite application.
 - `docs/` — Project brief, requirements, architecture, and delivery checklist.
+- Firebase Hosting and desktop/mobile packaging instructions are in
+  `docs/deployment.md`.
 
 ## Run locally
 

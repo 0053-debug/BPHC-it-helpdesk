@@ -1,0 +1,32 @@
+name: Deploy Firebase Hosting
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Build web app
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: /api
+          VITE_WS_BASE_URL: https://bphc-it-helpdesk.web.app
+      - name: Deploy Hosting site
+        working-directory: .
+        run: npx --yes firebase-tools deploy --only hosting --project bphc-it-helpdesk --non-interactive
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

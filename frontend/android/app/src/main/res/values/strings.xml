@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">I-ITSM</string>
+    <string name="title_activity_main">I-ITSM</string>
+    <string name="package_name">edu.bphc.iitsm</string>
+    <string name="custom_url_scheme">edu.bphc.iitsm</string>
+</resources>

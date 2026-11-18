@@ -1,0 +1,96 @@
+name: Build desktop and Android apps
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+            installer: I-ITSM-win-x64-1.1.0.exe
+          - os: macos-latest
+            platform: mac
+            installer: I-ITSM-mac-universal-1.1.0.dmg
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Build desktop installer
+        run: |
+          npm run build
+          if [ "${{ matrix.platform }}" = "win" ]; then npx electron-builder --win nsis --x64 --publish never; fi
+          if [ "${{ matrix.platform }}" = "mac" ]; then npx electron-builder --mac dmg --universal --publish never; fi
+        shell: bash
+        env:
+          VITE_API_BASE_URL: https://bphc-it-helpdesk.web.app/api
+          VITE_WS_BASE_URL: https://bphc-it-helpdesk.web.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.platform }}
+          path: frontend/release/${{ matrix.installer }}
+          if-no-files-found: error
+
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - name: Build Android package
+        env:
+          VITE_API_BASE_URL: https://bphc-it-helpdesk.web.app/api
+          VITE_WS_BASE_URL: https://bphc-it-helpdesk.web.app
+        run: |
+          npm run build
+          npx cap sync android
+          cd android
+          ./gradlew assembleDebug
+          mkdir -p ../release
+          cp app/build/outputs/apk/debug/app-debug.apk ../release/I-ITSM-android-debug-1.1.0.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: frontend/release/I-ITSM-android-debug-1.1.0.apk
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [desktop, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: release-assets/**
