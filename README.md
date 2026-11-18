@@ -11,9 +11,9 @@
 
 ## Executive Summary
 
-The **Intelligent IT Service Management System (I-ITSM)** is an enterprise-grade ITIL-aligned campus service desk platform developed for the **BITS Pilani Hyderabad Campus (BPHC)** Object-Oriented Programming Course (**CS F213**, Semester-I, 2026–2027).
+The **Intelligent IT Service Management System (I-ITSM)** is an enterprise-grade ITIL-aligned campus service desk platform developed for the **BITS Pilani Hyderabad Campus (BPHC)** Object-Oriented Programming Course (**CS F213**).
 
-Modern campus and corporate IT environments face challenges with unorganized incident reporting, delayed technician dispatch, missed SLA commitments, cascading service outages, and uncoordinated resolutions. I-ITSM addresses these challenges by delivering an end-to-end incident lifecycle management platform powered by clean Object-Oriented Design (OOD) patterns, automated SLA tracking, workload-balanced assignment strategies, Directed Acyclic Graph (DAG) service impact modeling, and an immutable PostgreSQL audit ledger.
+Modern campus and corporate IT environments face challenges with unorganized incident reporting, delayed technician dispatch, missed SLA commitments, cascading service outages, and uncoordinated resolutions. I-ITSM Dashboard addresses these challenges by delivering an end-to-end incident lifecycle management platform powered by clean Object-Oriented Design (OOD) patterns, automated SLA tracking, workload-balanced assignment strategies, Directed Acyclic Graph (DAG) service impact modeling, and an immutable PostgreSQL audit ledger.
 
 The solution is distributed natively across **Windows Desktop (64-bit installer)**, **Android Mobile (APK)**, and a **Cloud Web Console**.
 
