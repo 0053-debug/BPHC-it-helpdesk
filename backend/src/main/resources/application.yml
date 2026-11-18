@@ -56,7 +56,7 @@ app:
     monitor:
       interval-ms: ${SLA_MONITOR_INTERVAL_MS:60000}
   jwt:
-    secret: ${JWT_SECRET:}
+    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     expiration-ms: 86400000 # 24 hours
   demo-accounts:
     enabled: ${DEMO_ACCOUNTS_ENABLED:false}

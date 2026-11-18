@@ -42,6 +42,7 @@ public class SecurityConfig {
                     .authenticationEntryPoint(authenticationEntryPoint)
                     .accessDeniedHandler(accessDeniedHandler))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/health", "/api/health").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/ws-helpdesk/**", "/ws-iitsm/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
