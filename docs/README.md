@@ -55,8 +55,5 @@ The hard submission deadline stated in the brief is 22 November 2026.
 - `frontend/src/` currently has pages, shared components, and API/WebSocket
   services. As features grow, group reusable components and API modules by
   feature without moving files until imports and ownership are clear.
-- `legacy-prototype/` contains an earlier standalone incident lifecycle
-  prototype. It is retained as source material and is not built by the Spring
-  Boot project.
 - Runtime credentials belong in local environment files or a secret manager,
   never in version control.

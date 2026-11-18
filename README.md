@@ -1,4 +1,4 @@
-# I-ITSM
+# I-ITSM v1.1
 
 Intelligent IT Service Management & Incident Resolution System for reporting,
 prioritizing, assigning, and tracking internal IT incidents.
@@ -9,8 +9,6 @@ prioritizing, assigning, and tracking internal IT incidents.
   security, and automated tests.
 - `frontend/` — React and Vite application.
 - `docs/` — Project brief, requirements, architecture, and delivery checklist.
-- `legacy-prototype/` — Earlier standalone incident lifecycle prototype; retained as
-  historical coursework source and not part of the Spring Boot build.
 
 ## Run locally
 
