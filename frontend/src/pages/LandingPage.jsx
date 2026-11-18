@@ -3,7 +3,6 @@ import {
   Smartphone,
   Monitor,
   Globe,
-  Apple,
   Download,
   ArrowRight,
   ShieldCheck,
@@ -15,9 +14,18 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
+export default function LandingPage() {
   const version = '1.1.0';
   const release = 'https://github.com/0053-debug/BPHC-it-helpdesk/releases/latest/download';
+
+  const openConsole = (tab = 'login') => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('app', 'console');
+    if (tab) {
+      url.searchParams.set('tab', tab);
+    }
+    window.open(url.toString(), '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
@@ -43,14 +51,20 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
             <a href="#features" className="text-xs font-semibold text-slate-300 hover:text-white transition hidden md:block">
               Architecture & Features
             </a>
-            <button onClick={onLogin} className="text-xs font-semibold text-slate-300 hover:text-white transition">
+            <button
+              onClick={() => openConsole('login')}
+              className="text-xs font-semibold text-slate-300 hover:text-white transition"
+            >
               Sign in
             </button>
-            <button onClick={onRegister} className="text-xs font-semibold text-cyan-300 hover:text-white transition">
+            <button
+              onClick={() => openConsole('register')}
+              className="text-xs font-semibold text-cyan-300 hover:text-white transition"
+            >
               Register
             </button>
             <button
-              onClick={onLaunchApp}
+              onClick={() => openConsole()}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5"
             >
               <span>Launch Web Console</span>
@@ -81,7 +95,7 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
 
           <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
             A high-performance ITIL platform engineered for campus and enterprise IT infrastructure.
-            Report incidents, follow updates, and resolve issues from the browser, desktop, or a mobile home-screen app.
+            Report incidents, follow automated updates, and resolve issues from the browser, Windows desktop, or Android mobile app.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
@@ -93,7 +107,7 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
               <span>Get the apps</span>
             </a>
             <button
-              onClick={onLaunchApp}
+              onClick={() => openConsole()}
               className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-sm rounded-xl transition flex items-center gap-2"
             >
               <Globe className="w-4 h-4 text-cyan-400" />
@@ -104,8 +118,8 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
           {/* Quick Metrics Strip */}
           <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
             <div className="bg-slate-800/50 backdrop-blur-xs border border-slate-700/60 p-4 rounded-2xl">
-              <div className="text-2xl font-black text-white">&lt; 50ms</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">WebSocket Live Broadcast</div>
+              <div className="text-2xl font-black text-white">&lt; 1s Sync</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium">Real-Time State Engine</div>
             </div>
             <div className="bg-slate-800/50 backdrop-blur-xs border border-slate-700/60 p-4 rounded-2xl">
               <div className="text-2xl font-black text-cyan-400">P1 to P4</div>
@@ -117,7 +131,7 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
             </div>
             <div className="bg-slate-800/50 backdrop-blur-xs border border-slate-700/60 p-4 rounded-2xl">
               <div className="text-2xl font-black text-indigo-400">Cross-Platform</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Windows, macOS, Android, iOS</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium">Windows, Android & Web</div>
             </div>
           </div>
         </div>
@@ -128,52 +142,14 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-3xl font-extrabold text-white tracking-tight">
-              Install I-ITSM {version}
+              Install I-ITSM v{version}
             </h2>
             <p className="text-sm text-slate-400 mt-2">
-              Download desktop and Android builds, or install the website on your phone’s home screen.
+              Available as a Windows 64-bit desktop package, an Android mobile APK, or directly via the web browser console.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
-            {/* Android Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/60 transition group hover:shadow-2xl hover:shadow-blue-900/20">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-110 transition">
-                  <Smartphone className="w-6 h-6" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg text-white">Android Client</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
-                    Android APK
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  Install the Android app package on Android 9 or newer. The first release is distributed as a signed debug APK.
-                </p>
-                <div className="mt-4 space-y-1.5 text-xs text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Android 9.0+ (ARM64 & x86)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Uses the same secure web API</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-slate-800/60">
-                <a
-                  href={`${release}/I-ITSM-android-debug-${version}.apk`}
-                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download Android APK</span>
-                </a>
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Windows Desktop Card */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/60 transition group hover:shadow-2xl hover:shadow-blue-900/20">
               <div>
@@ -183,20 +159,20 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-lg text-white">Windows Desktop</h3>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300">
-                    Windows installer
+                    64-bit Installer (.exe)
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  Install the desktop app on 64-bit Windows 10 or newer.
+                  Dedicated desktop window with local notifications, background caching, and native OS integration.
                 </p>
                 <div className="mt-4 space-y-1.5 text-xs text-slate-400">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Windows 10 / 11 (64-bit)</span>
+                    <span>Windows 10 / 11 (x64)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Standalone desktop window</span>
+                    <span>Standalone Electron binary</span>
                   </div>
                 </div>
               </div>
@@ -212,98 +188,78 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
               </div>
             </div>
 
-            {/* macOS Desktop Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/60 transition group hover:shadow-2xl hover:shadow-blue-900/20">
+            {/* Android Mobile Card */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-emerald-500/60 transition group hover:shadow-2xl hover:shadow-emerald-900/20">
               <div>
-                <div className="w-12 h-12 rounded-xl bg-slate-700/50 border border-slate-600/50 flex items-center justify-center text-slate-200 mb-4 group-hover:scale-110 transition">
-                  <Apple className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-110 transition">
+                  <Smartphone className="w-6 h-6" />
                 </div>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg text-white">macOS Desktop</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-700 text-slate-200">Universal DMG</span>
-                </div>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">A universal disk image for Apple silicon and Intel Macs.</p>
-                <p className="mt-4 text-xs text-slate-400">The first build is unsigned and may require approval in Privacy &amp; Security.</p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-800/60">
-                <a href={`${release}/I-ITSM-mac-universal-${version}.dmg`} className="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition">
-                  <Download className="w-4 h-4" /><span>Download macOS DMG</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Web PWA Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/60 transition group hover:shadow-2xl hover:shadow-blue-900/20">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-110 transition">
-                  <Globe className="w-6 h-6" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg text-white">Cloud Web PWA</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">
-                    Direct Browser
+                  <h3 className="font-bold text-lg text-white">Android Mobile</h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
+                    Package (.apk)
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  Use the website directly, or install it from your browser for a home-screen icon and standalone window.
+                  On-the-go incident logging, technician ticket tracking, and status inspection on mobile devices.
                 </p>
                 <div className="mt-4 space-y-1.5 text-xs text-slate-400">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Installable via Address Bar (+)</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Android 9.0+ (ARM64 & x86)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Ticket updates need a connection</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Capacitor mobile client</span>
                   </div>
                 </div>
               </div>
 
               <div className="mt-6 pt-4 border-t border-slate-800/60">
                 <a
-                  href="https://bphc-it-helpdesk.web.app"
-                  className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20 transition"
+                  href={`${release}/I-ITSM-android-debug-${version}.apk`}
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition"
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Launch Web Console</span>
+                  <Download className="w-4 h-4" />
+                  <span>Download Android APK</span>
                 </a>
               </div>
             </div>
 
-            {/* iOS Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/60 transition group hover:shadow-2xl hover:shadow-blue-900/20">
+            {/* Web Browser Console Card */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-cyan-500/60 transition group hover:shadow-2xl hover:shadow-cyan-900/20">
               <div>
-                <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-4 group-hover:scale-110 transition">
-                  <Apple className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-110 transition">
+                  <Globe className="w-6 h-6" />
                 </div>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg text-white">Apple iOS</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
-                    Add to Home Screen
+                  <h3 className="font-bold text-lg text-white">Cloud Web Console</h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">
+                    Live Browser
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  Open this site in Safari, tap Share, then choose “Add to Home Screen.” A signed App Store app is not available yet.
+                  Full administrative and technician web console. Accessible immediately in any modern web browser.
                 </p>
                 <div className="mt-4 space-y-1.5 text-xs text-slate-400">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Works through Safari</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Chrome, Edge, Firefox, Safari</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Opens from your home screen</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Opens in standalone console workspace</span>
                   </div>
                 </div>
               </div>
 
               <div className="mt-6 pt-4 border-t border-slate-800/60">
                 <button
-                  onClick={onLaunchApp}
-                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-slate-700 transition"
+                  onClick={() => openConsole()}
+                  className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20 transition"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  <span>Open via Mobile Safari</span>
+                  <span>Launch Web Console</span>
                 </button>
               </div>
             </div>
@@ -319,7 +275,7 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
               Enterprise Engineering Architecture
             </h2>
             <p className="text-sm text-slate-400 mt-2">
-              Built in accordance with strict Object-Oriented Design principles and ISO/IEC 25010 software quality metrics.
+              Engineered according to rigorous Object-Oriented Design principles and ISO/IEC 25010 software quality attributes.
             </p>
           </div>
 
@@ -330,7 +286,7 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
               </div>
               <h3 className="font-bold text-base text-white">Observer Pattern Event Bus</h3>
               <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Decoupled GoF Subject/Observer pattern emitting synchronous audit records while broadcasting asynchronous STOMP WebSocket and SMTP email alerts.
+                Decoupled GoF Subject/Observer pattern delivering synchronous audit journal events alongside multi-channel notifications and responsive HTML email alerts.
               </p>
             </div>
 
@@ -340,7 +296,7 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
               </div>
               <h3 className="font-bold text-base text-white">Service Dependency Graph</h3>
               <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Full DAG dependency model mapping upstream infrastructure (SSO, Network, DB) and determining downstream blast radius during outages with cycle detection.
+                Directed Acyclic Graph (DAG) mapping upstream infrastructure dependencies with DFS-based cycle prevention and downstream blast radius impact inspection.
               </p>
             </div>
 
@@ -350,7 +306,7 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
               </div>
               <h3 className="font-bold text-base text-white">Immutable Audit Guarantees</h3>
               <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Enforced by a PostgreSQL database-level trigger blocking all UPDATE and DELETE queries. Certified write-only audit trail for compliance auditing.
+                Enforced by a PostgreSQL database-level trigger blocking all UPDATE and DELETE mutations. A certified append-only audit trail for compliance and tracking.
               </p>
             </div>
           </div>
@@ -360,7 +316,7 @@ export default function LandingPage({ onLaunchApp, onLogin, onRegister }) {
       {/* Footer */}
       <footer className="bg-slate-950 border-t border-slate-800 py-8 text-center text-xs text-slate-500">
         <p>BPHC CS F213 / MAC F212 OOP Project (Semester-I, 2026–2027) &bull; Intelligent IT Service Management System</p>
-        <p className="mt-1 text-slate-600">Designed for Firebase Cloud Hosting & Cloud-Native Deployment</p>
+        <p className="mt-1 text-slate-600">Cross-Platform Distribution: Windows Desktop, Android Mobile & Cloud Web</p>
       </footer>
     </div>
   );

@@ -28,7 +28,11 @@ export default function LoginPage({ onAuthenticated, onRegister, onHome }) {
 
   return (
     <section className="max-w-md mx-auto bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
-      <button onClick={onHome} className="text-sm text-blue-700 hover:underline">Back to home</button>
+      {onHome && (
+        <button onClick={onHome} className="text-sm text-blue-700 hover:underline mb-2 block">
+          Back to home
+        </button>
+      )}
       <h1 className="text-2xl font-bold text-slate-900 mt-5">Sign in</h1>
       <p className="text-sm text-slate-600 mt-1">Use your I-ITSM account to continue.</p>
       <form onSubmit={submit} className="space-y-4 mt-6">

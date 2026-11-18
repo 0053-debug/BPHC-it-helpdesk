@@ -19,7 +19,7 @@ rules.
 - Persist timestamps in UTC. Preserve the specified lifecycle, priority, SLA,
   duplicate, capacity, and escalation rules.
 - Prefer a small, demonstrable implementation. Do not add unrelated products,
-  frameworks, infrastructure, or runtime AI dependencies.
+  frameworks, infrastructure, or unnecessary external runtime dependencies.
 
 ## Safe collaboration
 
