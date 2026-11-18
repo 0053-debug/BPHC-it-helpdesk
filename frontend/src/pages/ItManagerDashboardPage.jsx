@@ -66,9 +66,9 @@ export default function ItManagerDashboardPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">ITSM Executive & Analytics Dashboard</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Helpdesk Operations Dashboard</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Real-time operational visibility, SLA monitoring, workload capacity, and intelligent bottleneck detection.
+            Overview of ticket volumes, team workloads, service health, and resolution performance.
           </p>
         </div>
         <button
@@ -81,7 +81,7 @@ export default function ItManagerDashboardPage() {
         </button>
       </div>
 
-      {/* Intelligent Bottleneck Warnings Banner */}
+      {/* Operational Attention Banner */}
       {bottlenecks.length > 0 && (
         <div className="space-y-3">
           {bottlenecks.map((bn) => (
@@ -110,8 +110,8 @@ export default function ItManagerDashboardPage() {
                 <p className="text-xs mt-1 text-slate-700">{bn.description}</p>
                 <div className="mt-2 text-xs flex flex-wrap gap-4 font-medium">
                   <span><strong>Metric:</strong> {bn.metricLabel} ({bn.metricValue})</span>
-                  <span><strong>Threshold:</strong> {bn.thresholdLabel}</span>
-                  <span className="text-blue-700"><strong>Recommendation:</strong> {bn.recommendation}</span>
+                  <span><strong>Limit:</strong> {bn.thresholdLabel}</span>
+                  <span className="text-blue-700"><strong>Suggested Action:</strong> {bn.recommendation}</span>
                 </div>
               </div>
             </div>
@@ -132,20 +132,20 @@ export default function ItManagerDashboardPage() {
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium">Active Load</span>
+            <span className="text-xs font-medium">Active Tickets</span>
             <Activity className="w-4 h-4 text-amber-500" />
           </div>
           <div className="text-2xl font-bold text-amber-600">{overview?.openIncidents ?? 0}</div>
-          <div className="text-[11px] text-slate-400 mt-1">In triage / progress</div>
+          <div className="text-[11px] text-slate-400 mt-1">Currently open</div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium">P1 Critical</span>
+            <span className="text-xs font-medium">Critical (P1)</span>
             <AlertOctagon className="w-4 h-4 text-red-500" />
           </div>
           <div className="text-2xl font-bold text-red-600">{overview?.criticalIncidents ?? 0}</div>
-          <div className="text-[11px] text-slate-400 mt-1">30m SLA window</div>
+          <div className="text-[11px] text-slate-400 mt-1">30-minute target</div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
@@ -154,7 +154,7 @@ export default function ItManagerDashboardPage() {
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="text-2xl font-bold text-emerald-600">{overview?.resolvedIncidents ?? 0}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Successfully closed</div>
+          <div className="text-[11px] text-slate-400 mt-1">Completed tickets</div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
@@ -163,16 +163,16 @@ export default function ItManagerDashboardPage() {
             <TrendingUp className="w-4 h-4 text-indigo-500" />
           </div>
           <div className="text-2xl font-bold text-slate-900">{overview?.slaCompliancePercentage ?? 100}%</div>
-          <div className="text-[11px] text-slate-400 mt-1">{overview?.slaBreaches ?? 0} breaches</div>
+          <div className="text-[11px] text-slate-400 mt-1">{overview?.slaBreaches ?? 0} late tickets</div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium">Avg MTTR</span>
+            <span className="text-xs font-medium">Avg Resolution</span>
             <Clock className="w-4 h-4 text-purple-500" />
           </div>
           <div className="text-2xl font-bold text-purple-600">{overview?.averageMttrMinutes ?? 0}m</div>
-          <div className="text-[11px] text-slate-400 mt-1">Mean resolution time</div>
+          <div className="text-[11px] text-slate-400 mt-1">Average fix time</div>
         </div>
       </div>
 
@@ -184,10 +184,10 @@ export default function ItManagerDashboardPage() {
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-600" />
-                Technician Workload vs Max Capacity
+                Technician Workload vs Capacity
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Active tickets allocated vs. maximum concurrent workload limit (Cap: 5).
+                Active tickets assigned compared to the 5-ticket concurrent capacity limit.
               </p>
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function ItManagerDashboardPage() {
                 <YAxis allowDecimals={false} />
                 <Tooltip
                   formatter={(value, name) => [
-                    name === 'activeTickets' ? `${value} tickets` : `${value} max cap`,
+                    name === 'activeTickets' ? `${value} tickets` : `${value} max limit`,
                     name === 'activeTickets' ? 'Active' : 'Max Limit'
                   ]}
                 />
@@ -209,16 +209,16 @@ export default function ItManagerDashboardPage() {
           </div>
         </div>
 
-        {/* Service Health Incident Distribution Donut */}
+        {/* Service Incident Distribution Donut */}
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-emerald-600" />
-                Service Health & Outage Density
+                Ticket Distribution by Service
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Incident density and outage distribution across registered digital services.
+                Breakdown of reported issues across campus digital services.
               </p>
             </div>
           </div>

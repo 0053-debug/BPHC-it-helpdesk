@@ -3,7 +3,7 @@ import { Link2 } from 'lucide-react';
 import api from '../services/api';
 
 function errorMessage(error) {
-  return error.response?.data?.message || 'Sign in failed. Check your details and try again.';
+  return error.response?.data?.message || 'Incorrect email or password. Please try again.';
 }
 
 export default function LoginPage({ onAuthenticated, onRegister, onHome }) {
@@ -34,7 +34,7 @@ export default function LoginPage({ onAuthenticated, onRegister, onHome }) {
         </button>
       )}
       <h1 className="text-2xl font-bold text-slate-900 mt-5">Sign in</h1>
-      <p className="text-sm text-slate-600 mt-1">Use your I-ITSM account to continue.</p>
+      <p className="text-sm text-slate-600 mt-1">Sign in with your campus account to raise or track tickets.</p>
       <form onSubmit={submit} className="space-y-4 mt-6">
         <label className="block text-sm font-medium text-slate-700">
           Email
@@ -70,10 +70,10 @@ export default function LoginPage({ onAuthenticated, onRegister, onHome }) {
         </button>
       </form>
       <p className="text-sm text-slate-600 mt-5">
-        New here? <button onClick={onRegister} className="text-blue-700 font-semibold hover:underline">Create an employee account</button>
+        New here? <button onClick={onRegister} className="text-blue-700 font-semibold hover:underline">Create a student/staff account</button>
       </p>
       <div className="flex items-center gap-2 text-xs text-slate-500 mt-5">
-        <Link2 className="w-4 h-4" /> Your password is never returned by the API.
+        <Link2 className="w-4 h-4" /> Passwords are securely hashed with BCrypt.
       </div>
     </section>
   );

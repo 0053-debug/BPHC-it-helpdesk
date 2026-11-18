@@ -104,9 +104,9 @@ export default function ServiceManagementPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">IT Service Catalog</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Campus Services Directory</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Configure registered enterprise services, criticality factors (1.00 - 2.00x), and upstream dependencies.
+            Manage campus digital services, priority weights (1.00 - 2.00x), and system dependencies.
           </p>
         </div>
         <button
@@ -117,7 +117,7 @@ export default function ServiceManagementPage() {
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition"
         >
           <Plus className="w-4 h-4" />
-          Register New Service
+          Add Campus Service
         </button>
       </div>
 
@@ -129,11 +129,11 @@ export default function ServiceManagementPage() {
               <tr className="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3.5 px-4">Service</th>
                 <th className="py-3.5 px-4">Code</th>
-                <th className="py-3.5 px-4">Criticality</th>
-                <th className="py-3.5 px-4">Base Weight</th>
-                <th className="py-3.5 px-4">Baseline MTTR</th>
+                <th className="py-3.5 px-4">Priority Weight</th>
+                <th className="py-3.5 px-4">Base SLA</th>
+                <th className="py-3.5 px-4">Target Resolution</th>
                 <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Upstream Dependencies</th>
+                <th className="py-3.5 px-4">Dependencies</th>
                 <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -141,7 +141,7 @@ export default function ServiceManagementPage() {
               {services.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="py-8 text-center text-slate-400">
-                    No services registered.
+                    No campus services registered yet.
                   </td>
                 </tr>
               ) : (
@@ -205,7 +205,7 @@ export default function ServiceManagementPage() {
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold text-slate-900 mb-4">
-              {editingId ? 'Edit IT Service' : 'Register New IT Service'}
+              {editingId ? 'Edit Campus Service' : 'Add New Campus Service'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

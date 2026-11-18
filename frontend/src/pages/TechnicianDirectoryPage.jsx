@@ -86,8 +86,8 @@ export default function TechnicianDirectoryPage({ currentUser }) {
     <section className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Users className="w-6 h-6" /> Technician directory</h1>
-          <p className="text-sm text-slate-600 mt-1">Skills, availability, and live active workload versus capacity.</p>
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Users className="w-6 h-6" /> Technician Directory</h1>
+          <p className="text-sm text-slate-600 mt-1">View on-duty technicians, their skills, and current ticket workloads.</p>
         </div>
         <button onClick={loadTechnicians} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm disabled:opacity-60">
           <RefreshCw className="w-4 h-4" /> Refresh
@@ -99,7 +99,7 @@ export default function TechnicianDirectoryPage({ currentUser }) {
 
       {isAdmin && (
         <div className="rounded-xl border bg-white p-4 flex flex-wrap items-center gap-3">
-          <label htmlFor="assignment-strategy" className="font-semibold text-sm">Automatic assignment strategy</label>
+          <label htmlFor="assignment-strategy" className="font-semibold text-sm">Ticket auto-assignment method:</label>
           <select
             id="assignment-strategy"
             value={strategy}
@@ -116,7 +116,7 @@ export default function TechnicianDirectoryPage({ currentUser }) {
       {loading ? (
         <p className="text-sm text-slate-600">Loading technicians…</p>
       ) : technicians.length === 0 ? (
-        <p className="rounded-xl border bg-white p-6 text-sm text-slate-600">No active technicians are registered.</p>
+        <p className="rounded-xl border bg-white p-6 text-sm text-slate-600">No active technicians found.</p>
       ) : (
         <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
           <div className="overflow-x-auto rounded-xl border bg-white">
@@ -143,11 +143,11 @@ export default function TechnicianDirectoryPage({ currentUser }) {
 
           {selected && (
             <aside className="rounded-xl border bg-white p-5">
-              <h2 className="text-lg font-bold text-slate-900">Technician profile</h2>
+              <h2 className="text-lg font-bold text-slate-900">Technician Details</h2>
               <p className="text-sm text-slate-600 mt-1">{selected.fullName}</p>
               <dl className="mt-4 space-y-3 text-sm">
                 <div><dt className="font-semibold text-slate-700">Skills</dt><dd>{selected.skills.length ? selected.skills.join(', ') : 'None listed'}</dd></div>
-                <div><dt className="font-semibold text-slate-700">Current workload</dt><dd>{selected.activeWorkload} active incidents, capacity {selected.capacity}</dd></div>
+                <div><dt className="font-semibold text-slate-700">Current Workload</dt><dd>{selected.activeWorkload} active tickets (capacity: {selected.capacity})</dd></div>
                 <div><dt className="font-semibold text-slate-700">Availability</dt><dd>{selected.availability}</dd></div>
               </dl>
               {canEditAvailability && (

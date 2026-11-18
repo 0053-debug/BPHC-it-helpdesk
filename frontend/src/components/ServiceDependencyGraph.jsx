@@ -73,10 +73,10 @@ export default function ServiceDependencyGraph() {
         <div>
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <Server className="w-5 h-5 text-blue-600" />
-            Service Dependency Graph Visualizer
+            Service Dependency & Outage Impact Map
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Innovation Challenge: Interactive upstream and downstream service dependency mapping.
+            Visual map of campus service dependencies and downstream outage impact.
           </p>
         </div>
         <button
@@ -91,7 +91,7 @@ export default function ServiceDependencyGraph() {
         {/* Nodes Grid */}
         <div className="lg:col-span-2 space-y-4">
           <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-            Enterprise Digital Services & Dependencies
+            Campus Services & System Dependencies
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {graphData.nodes.map((node) => {
@@ -142,7 +142,7 @@ export default function ServiceDependencyGraph() {
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
           <div>
             <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-              Blast Radius & Dependency Inspector
+              Service Details & Impact Inspector
             </div>
             {selectedNode ? (
               <div className="space-y-3">
@@ -153,7 +153,7 @@ export default function ServiceDependencyGraph() {
                 </div>
 
                 <div>
-                  <div className="text-xs font-semibold text-slate-700 mb-1">Upstream Dependencies (Required):</div>
+                  <div className="text-xs font-semibold text-slate-700 mb-1">Required Services (Upstream):</div>
                   {graphData.edges.filter((e) => e.source === selectedNode.id).length === 0 ? (
                     <div className="text-xs text-slate-400 italic">No upstream dependencies. Autonomous service.</div>
                   ) : (
@@ -174,9 +174,9 @@ export default function ServiceDependencyGraph() {
                 </div>
 
                 <div>
-                  <div className="text-xs font-semibold text-slate-700 mb-1">Downstream Impact (Blast Radius):</div>
+                  <div className="text-xs font-semibold text-slate-700 mb-1">Affected Services if Outage Occurs (Downstream):</div>
                   {graphData.edges.filter((e) => e.target === selectedNode.id).length === 0 ? (
-                    <div className="text-xs text-slate-400 italic">No downstream services depend on this.</div>
+                    <div className="text-xs text-slate-400 italic">No other services depend on this.</div>
                   ) : (
                     <ul className="space-y-1">
                       {graphData.edges
@@ -186,7 +186,7 @@ export default function ServiceDependencyGraph() {
                           return (
                             <li key={e.source} className="text-xs flex items-center gap-1.5 text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200">
                               <ShieldAlert className="w-3 h-3 text-amber-600" />
-                              <span>{src?.name} will degrade if outage occurs</span>
+                              <span>{src?.name} will be affected</span>
                             </li>
                           );
                         })}
@@ -195,11 +195,11 @@ export default function ServiceDependencyGraph() {
                 </div>
               </div>
             ) : (
-              <div className="text-xs text-slate-400">Select a service node to inspect its dependency cascade.</div>
+              <div className="text-xs text-slate-400">Select a service above to inspect its dependencies.</div>
             )}
           </div>
           <div className="mt-4 pt-3 border-t border-slate-200 text-[11px] text-slate-500">
-            Enforces DAG invariants: Cycle prevention prevents circular dependency failures.
+            Directed Acyclic Graph (DAG) with cycle-detection prevents circular dependencies.
           </div>
         </div>
       </div>

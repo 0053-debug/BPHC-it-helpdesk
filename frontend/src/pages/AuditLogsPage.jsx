@@ -87,21 +87,21 @@ export default function AuditLogsPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Shield className="w-6 h-6 text-indigo-600" />
-            Enterprise Audit Trail
+            System Activity & Audit Log
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Immutable, append-only history of all state transitions, assignments, SLA alerts, and actor actions.
+            Permanent, chronological history of all ticket actions, assignments, and status updates.
           </p>
         </div>
         <div className="text-xs bg-indigo-50 border border-indigo-200 text-indigo-800 px-3 py-1.5 rounded-lg font-mono">
-          PostgreSQL Trigger Enforced: UPDATE/DELETE Forbidden
+          Tamper-Proof Ledger (Trigger-Protected)
         </div>
       </div>
 
       {/* Filter Bar */}
       <form onSubmit={handleSearch} className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-wrap gap-4 items-center">
         <div className="flex-1 min-w-[180px]">
-          <label className="block text-xs font-semibold text-slate-600 mb-1">Incident ID</label>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Ticket ID</label>
           <input
             type="number"
             placeholder="e.g. 101"

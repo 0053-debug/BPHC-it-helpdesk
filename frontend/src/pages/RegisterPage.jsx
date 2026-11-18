@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import api from '../services/api';
 
 function errorMessage(error) {
-  return error.response?.data?.message || 'Registration failed. Check your details and try again.';
+  return error.response?.data?.message || 'Could not create account. Please check your details and try again.';
 }
 
 export default function RegisterPage({ onAuthenticated, onLogin, onHome }) {
@@ -34,7 +34,7 @@ export default function RegisterPage({ onAuthenticated, onLogin, onHome }) {
         </button>
       )}
       <h1 className="text-2xl font-bold text-slate-900 mt-5">Create an account</h1>
-      <p className="text-sm text-slate-600 mt-1">New registrations receive the Employee role.</p>
+      <p className="text-sm text-slate-600 mt-1">Sign up to submit support requests and follow updates.</p>
       <form onSubmit={submit} className="space-y-4 mt-6">
         <label className="block text-sm font-medium text-slate-700">
           Full name

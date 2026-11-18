@@ -78,7 +78,7 @@ export default function NotificationBell({ userId }) {
             <div className="flex items-center space-x-2">
               <span className="font-semibold text-slate-800 text-sm">Notifications</span>
               <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">
-                Auto-Sync
+                Live
               </span>
             </div>
             {unreadCount > 0 && (
@@ -119,7 +119,7 @@ export default function NotificationBell({ userId }) {
 
           <div className="p-2.5 bg-slate-50 border-t border-slate-200 text-center">
             <span className="text-[11px] text-slate-500">
-              Live updates active • Synced with Neon database
+              Live updates active &bull; Syncs with campus database
             </span>
           </div>
         </div>
