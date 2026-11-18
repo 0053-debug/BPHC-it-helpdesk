@@ -25,7 +25,8 @@ public class EscalationService {
     @Autowired
     public EscalationService(SlaIncidentSource source, SLAPolicyResolver resolver, SLAService slaService,
                              EscalationRecordRepository records, ApplicationEventPublisher publisher,
-                             JdbcTemplate jdbc, IncidentEventPublisher incidentEvents) {
+                             @Autowired(required = false) JdbcTemplate jdbc,
+                             @Autowired(required = false) IncidentEventPublisher incidentEvents) {
         this.source = source; this.resolver = resolver; this.slaService = slaService;
         this.records = records; this.publisher = publisher; this.jdbc = jdbc; this.incidentEvents = incidentEvents;
     }

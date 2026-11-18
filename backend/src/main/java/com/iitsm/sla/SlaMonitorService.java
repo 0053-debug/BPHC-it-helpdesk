@@ -34,7 +34,6 @@ public class SlaMonitorService {
     private final IncidentEventPublisher incidentEvents;
     private final Set<String> localWarnings = ConcurrentHashMap.newKeySet();
 
-    @Autowired
     public SlaMonitorService(SlaIncidentSource source,
                              SLAPolicyResolver resolver,
                              SLAService slaService,
@@ -47,7 +46,8 @@ public class SlaMonitorService {
     @Autowired
     public SlaMonitorService(SlaIncidentSource source, SLAPolicyResolver resolver, SLAService slaService,
                              SlaViolationRepository violations, ApplicationEventPublisher publisher,
-                             JdbcTemplate jdbc, IncidentEventPublisher incidentEvents) {
+                             @Autowired(required = false) JdbcTemplate jdbc,
+                             @Autowired(required = false) IncidentEventPublisher incidentEvents) {
         this.source = source;
         this.resolver = resolver;
         this.slaService = slaService;

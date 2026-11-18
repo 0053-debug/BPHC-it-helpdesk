@@ -34,10 +34,6 @@ spring:
     init:
       mode: ${SPRING_SQL_INIT_MODE:always}
 
-sla:
-  monitor:
-    interval-ms: ${SLA_MONITOR_INTERVAL_MS:60000}
-
   mail:
     host: ${SPRING_MAIL_HOST:sandbox.smtp.mailtrap.io}
     port: ${SPRING_MAIL_PORT:2525}
@@ -49,6 +45,10 @@ sla:
           auth: true
           starttls:
             enable: true
+
+sla:
+  monitor:
+    interval-ms: ${SLA_MONITOR_INTERVAL_MS:60000}
 
 # Security & JWT
 app:
