@@ -6,7 +6,7 @@ RUN mvn --batch-mode --no-transfer-progress -DskipTests package
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-COPY --from=build /workspace/target/iitsm-backend-1.1.0.jar /app/app.jar
+COPY --from=build /workspace/target/*.jar /app/app.jar
 ENV PORT=8080
 EXPOSE 8080
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=65.0", "-XX:+UseSerialGC", "-Xss512k", "-jar", "/app/app.jar"]
