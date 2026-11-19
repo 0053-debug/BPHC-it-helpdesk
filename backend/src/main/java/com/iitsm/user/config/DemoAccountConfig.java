@@ -30,6 +30,12 @@ public class DemoAccountConfig {
             saveUser(environment, userRepository, passwordEncoder, "DEMO_TEAM_LEAD", UserRole.ROLE_TEAM_LEAD);
             saveUser(environment, userRepository, passwordEncoder, "DEMO_TECHNICIAN", UserRole.ROLE_TECHNICIAN);
             saveUser(environment, userRepository, passwordEncoder, "DEMO_EMPLOYEE", UserRole.ROLE_EMPLOYEE);
+            if (environment.containsProperty("DEMO_TECHNICIAN_2_EMAIL")) {
+                saveUser(environment, userRepository, passwordEncoder, "DEMO_TECHNICIAN_2", UserRole.ROLE_TECHNICIAN);
+            }
+            if (environment.containsProperty("DEMO_TECHNICIAN_3_EMAIL")) {
+                saveUser(environment, userRepository, passwordEncoder, "DEMO_TECHNICIAN_3", UserRole.ROLE_TECHNICIAN);
+            }
         };
     }
 
@@ -45,7 +51,16 @@ public class DemoAccountConfig {
                 || password.getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new IllegalStateException(prefix + "_PASSWORD must be 8 to 72 UTF-8 bytes");
         }
-        if (userRepository.findByEmail(email).isPresent()) {
+
+        var existing = userRepository.findByEmail(email);
+        if (existing.isPresent()) {
+            User user = existing.get();
+            user.setPasswordHash(passwordEncoder.encode(password));
+            user.setActive(true);
+            if (user instanceof Technician tech && role == UserRole.ROLE_TECHNICIAN) {
+                tech.setStatus(AvailabilityStatus.AVAILABLE);
+            }
+            userRepository.save(user);
             return;
         }
 
