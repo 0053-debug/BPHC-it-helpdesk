@@ -1,355 +1,157 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import {
-  Smartphone,
-  Monitor,
-  Globe,
-  Download,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  Cpu,
-  Layers,
   Activity,
+  ArrowRight,
   CheckCircle2,
-  ExternalLink
+  ClipboardList,
+  Cpu,
+  Download,
+  ExternalLink,
+  Globe,
+  Layers,
+  Monitor,
+  ShieldCheck,
+  Smartphone,
+  Zap,
 } from 'lucide-react';
 
-export default function LandingPage() {
-  const version = '1.1.0';
-  const release = 'https://github.com/0053-debug/BPHC-it-helpdesk/releases/latest/download';
+const version = '1.1.0';
+const release = 'https://github.com/0053-debug/BPHC-it-helpdesk/releases/latest/download';
 
-  const scrollTo = (id) => (e) => {
-    if (e) e.preventDefault();
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+const platforms = [
+  {
+    id: 'windows', label: 'Windows', title: 'Windows desktop', type: 'Installer (.exe)', icon: Monitor,
+    description: 'A standalone desktop application for faculty, staff, and campus lab machines, with desktop notifications.',
+    facts: ['Windows 10 / 11 (64-bit)', 'Self-contained desktop package'], action: 'Download Windows app',
+  },
+  {
+    id: 'android', label: 'Android', title: 'Android mobile', type: 'APK package', icon: Smartphone,
+    description: 'A mobile client for raising tickets on the go or checking technician updates from your hostel room.',
+    facts: ['Android 9.0 and newer', 'Direct APK installation'], action: 'Download Android APK',
+  },
+  {
+    id: 'web', label: 'Web app', title: 'Web browser', type: 'Instant access', icon: Globe,
+    description: 'Open the full service desk in your browser without installing software.',
+    facts: ['Chrome, Edge, Firefox, Safari', 'Opens in a clean workspace'],
+    action: 'Launch web console',
+  },
+];
+
+export default function LandingPage() {
+  const [activePlatform, setActivePlatform] = useState('web');
+  const tabRefs = useRef([]);
+  const scrollTo = (id) => (event) => {
+    if (event) event.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const openConsole = (tab) => {
     const url = new URL(window.location.origin + window.location.pathname);
     url.searchParams.set('app', 'console');
-    if (tab) {
-      url.searchParams.set('tab', tab);
-    }
+    if (tab) url.searchParams.set('tab', tab);
     window.open(url.toString(), '_blank', 'noopener,noreferrer');
   };
 
-  return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
-      {/* Top Navbar */}
-      <nav className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-3 cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20">
-              <Cpu className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-lg font-extrabold tracking-tight text-white">BPHC IT HelpDesk</span>
-              <span className="hidden sm:inline-block ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 uppercase tracking-widest">
-                v{version} · Campus
-              </span>
-            </div>
-          </div>
+  const handleDownloadTabs = (event, index) => {
+    const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+    if (!step && event.key !== 'Home' && event.key !== 'End') return;
+    event.preventDefault();
+    const nextIndex = event.key === 'Home' ? 0 : event.key === 'End' ? platforms.length - 1 : (index + step + platforms.length) % platforms.length;
+    setActivePlatform(platforms[nextIndex].id);
+    tabRefs.current[nextIndex]?.focus();
+  };
 
-          <div className="flex items-center gap-4">
-            <a
-              href="#downloads"
-              onClick={scrollTo('downloads')}
-              className="text-xs font-semibold text-slate-300 hover:text-white transition hidden md:block"
-            >
-              Downloads
-            </a>
-            <a
-              href="#features"
-              onClick={scrollTo('features')}
-              className="text-xs font-semibold text-slate-300 hover:text-white transition hidden md:block"
-            >
-              How it Works
-            </a>
-            <button
-              onClick={() => openConsole('login')}
-              className="text-xs font-semibold text-slate-300 hover:text-white transition"
-            >
-              Sign in
-            </button>
-            <button
-              onClick={() => openConsole('register')}
-              className="text-xs font-semibold text-cyan-300 hover:text-white transition"
-            >
-              Register
-            </button>
-            <a
-              href="?app=console"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5"
-            >
-              <span>Open HelpDesk</span>
-              <ArrowRight className="w-4 h-4" />
-            </a>
+  return (
+    <div className="public-shell">
+      <nav className="public-nav" aria-label="Main navigation">
+        <div className="public-container public-nav__inner">
+          <a className="public-brand" href="#top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="BPHC IT HelpDesk home">
+            <span className="console-brand__mark"><Cpu size={19} aria-hidden="true" /></span>
+            <span><strong>BPHC IT HelpDesk</strong><small>Campus service desk · v{version}</small></span>
+          </a>
+          <div className="public-nav__links">
+            <a className="public-tab" href="#downloads" onClick={scrollTo('downloads')}>Downloads</a>
+            <a className="public-tab" href="#features" onClick={scrollTo('features')}>How it works</a>
+            <button className="public-tab" onClick={() => openConsole('login')}>Sign in</button>
+            <button className="public-tab public-tab--action" onClick={() => openConsole('register')}>Register</button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-16 overflow-hidden">
-        {/* Ambient background glows */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-1/3 right-10 w-[300px] h-[250px] bg-cyan-500/15 rounded-full blur-[90px] pointer-events-none" />
-
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-blue-300 text-xs font-semibold mb-6 shadow-inner">
-            <Zap className="w-3.5 h-3.5 text-cyan-400" />
-            <span>BITS Pilani Hyderabad Campus · IT Support Portal</span>
-          </div>
-
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight sm:leading-none">
-            Campus IT Support, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-indigo-300">
-              Simplified & In One Place.
-            </span>
-          </h1>
-
-          <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Report Wi-Fi issues, lab system faults, and hostel network tickets in seconds.
-            Track updates live from your browser, Windows desktop, or Android phone.
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="#downloads"
-              onClick={scrollTo('downloads')}
-              className="px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl shadow-xl shadow-blue-600/25 transition transform hover:-translate-y-0.5 flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              <span>Get the Apps</span>
-            </a>
-            <a
-              href="?app=console"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-sm rounded-xl transition flex items-center gap-2"
-            >
-              <Globe className="w-4 h-4 text-cyan-400" />
-              <span>Open in Browser</span>
-            </a>
-          </div>
-
-          {/* Quick Metrics Strip */}
-          <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            <div className="bg-slate-800/50 backdrop-blur-xs border border-slate-700/60 p-4 rounded-2xl">
-              <div className="text-2xl font-black text-white">&lt; 1s</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Live Status Sync</div>
-            </div>
-            <div className="bg-slate-800/50 backdrop-blur-xs border border-slate-700/60 p-4 rounded-2xl">
-              <div className="text-2xl font-black text-cyan-400">P1 to P4</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Smart Prioritization</div>
-            </div>
-            <div className="bg-slate-800/50 backdrop-blur-xs border border-slate-700/60 p-4 rounded-2xl">
-              <div className="text-2xl font-black text-emerald-400">Audit Trail</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Tamper-Proof History</div>
-            </div>
-            <div className="bg-slate-800/50 backdrop-blur-xs border border-slate-700/60 p-4 rounded-2xl">
-              <div className="text-2xl font-black text-indigo-400">Multi-Platform</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Windows, Android & Web</div>
+      <main id="top">
+        <section className="public-container public-hero">
+          <div>
+            <h1>Campus IT Support,<br />Simplified &amp; In One Place.</h1>
+            <p className="public-campus-line"><Zap size={15} aria-hidden="true" /> BITS Pilani Hyderabad Campus · IT support portal</p>
+            <p className="public-hero__lead">Report Wi-Fi issues, lab system faults, and hostel network problems. Track updates from your browser, Windows desktop, or Android phone.</p>
+            <div className="public-actions">
+              <a className="public-action public-action--primary" href="#downloads" onClick={scrollTo('downloads')}><Download size={17} aria-hidden="true" /> Get the apps</a>
+              <a className="public-action" href="?app=console" target="_blank" rel="noopener noreferrer"><Globe size={17} aria-hidden="true" /> Open in browser</a>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Download Hub Section */}
-      <section id="downloads" className="py-20 bg-slate-950 border-t border-slate-800/80 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">
-              Get the BPHC HelpDesk App
-            </h2>
-            <p className="text-sm text-slate-400 mt-2">
-              Choose the best option for your setup — download the Windows installer, install the Android APK, or access the web app right now.
-            </p>
+          <div className="public-hero__aside" aria-label="HelpDesk features">
+            <p className="eyebrow">Campus support, connected</p>
+            <div className="public-stat-list">
+              <div className="public-stat"><span className="public-stat__value">&lt; 1s</span><span>Live status sync</span></div>
+              <div className="public-stat"><span className="public-stat__value">P1 to P4</span><span>Smart prioritization</span></div>
+              <div className="public-stat"><span className="public-stat__value">History</span><span>Ticket audit trail</span></div>
+              <div className="public-stat"><span className="public-stat__value">3 clients</span><span>Windows, Android, web</span></div>
+            </div>
           </div>
+        </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Windows Desktop Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/60 transition group hover:shadow-2xl hover:shadow-blue-900/20">
+        <section id="downloads" className="public-section">
+          <div className="public-container">
+            <div className="public-section__head">
+              <div><h2>Get the BPHC HelpDesk App</h2></div>
+              <p>Download a desktop or mobile client, or open the web console directly.</p>
+            </div>
+            <div className="download-tabs" role="tablist" aria-label="Choose an app platform" onKeyDown={(event) => handleDownloadTabs(event, platforms.findIndex((platform) => platform.id === activePlatform))}>
+              {platforms.map((platform, index) => {
+                const Icon = platform.icon;
+                return <button key={platform.id} ref={(element) => { tabRefs.current[index] = element; }} id={`download-tab-${platform.id}`} type="button" role="tab" aria-selected={activePlatform === platform.id} aria-controls={`download-panel-${platform.id}`} tabIndex={activePlatform === platform.id ? 0 : -1} onClick={() => setActivePlatform(platform.id)}><Icon size={16} aria-hidden="true" />{platform.label}</button>;
+              })}
+            </div>
+            {platforms.map((platform) => {
+              const Icon = platform.icon;
+              const isActive = activePlatform === platform.id;
+              return <article key={platform.id} id={`download-panel-${platform.id}`} className="download-panel" role="tabpanel" aria-labelledby={`download-tab-${platform.id}`} hidden={!isActive}>
               <div>
-                <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-4 group-hover:scale-110 transition">
-                  <Monitor className="w-6 h-6" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg text-white">Windows Desktop</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300">
-                    Installer (.exe)
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  Standalone desktop application for faculty, staff, and campus lab machines with desktop notifications.
-                </p>
-                <div className="mt-4 space-y-1.5 text-xs text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Windows 10 / 11 (64-bit)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Self-contained desktop package</span>
-                  </div>
-                </div>
+                <p className="download-platform-type">{platform.type}</p>
+                <h3>{platform.title}</h3>
+                <p>{platform.description}</p>
+                <ul className="download-facts">{platform.facts.map((fact) => <li key={fact}><CheckCircle2 size={16} aria-hidden="true" />{fact}</li>)}</ul>
               </div>
+              <div className="download-panel__action">
+                <span className="download-panel__icon"><Icon size={26} aria-hidden="true" /></span>
+                {platform.id === 'windows' && <a className="public-action public-action--primary" href={`${release}/I-ITSM-win-x64-${version}.exe`} download><Download size={16} aria-hidden="true" />{platform.action}<ArrowRight size={15} aria-hidden="true" /></a>}
+                {platform.id === 'android' && <a className="public-action public-action--primary" href={`${release}/I-ITSM-android-debug-${version}.apk`} download><Download size={16} aria-hidden="true" />{platform.action}<ArrowRight size={15} aria-hidden="true" /></a>}
+                {platform.id === 'web' && <a className="public-action public-action--primary" href="?app=console" target="_blank" rel="noopener noreferrer"><ExternalLink size={16} aria-hidden="true" />{platform.action}<ArrowRight size={15} aria-hidden="true" /></a>}
+              </div>
+            </article>;
+            })}
+          </div>
+        </section>
 
-              <div className="mt-6 pt-4 border-t border-slate-800/60">
-                <a
-                  href={`${release}/I-ITSM-win-x64-${version}.exe`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download Windows App</span>
-                </a>
-              </div>
+        <section id="features" className="public-section">
+          <div className="public-container">
+            <div className="public-section__head">
+              <div><h2>How the System Works</h2></div>
+              <p>Object-oriented patterns keep campus IT requests predictable, visible, and responsive.</p>
             </div>
-
-            {/* Android Mobile Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-emerald-500/60 transition group hover:shadow-2xl hover:shadow-emerald-900/20">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-110 transition">
-                  <Smartphone className="w-6 h-6" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg text-white">Android Mobile</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
-                    APK Package
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  Fast mobile client for raising tickets on the go from your hostel room or checking technician queues.
-                </p>
-                <div className="mt-4 space-y-1.5 text-xs text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Android 9.0 and newer</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Direct APK installation</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-slate-800/60">
-                <a
-                  href={`${release}/I-ITSM-android-debug-${version}.apk`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download Android APK</span>
-                </a>
-              </div>
+            <div className="feature-rows">
+              <article className="feature-row"><h3><span className="feature-row__icon"><Activity size={19} aria-hidden="true" /></span>Live Event Notifications</h3><p>The Observer pattern sends live changes as tickets are assigned, investigated, and resolved.</p></article>
+              <article className="feature-row"><h3><span className="feature-row__icon"><Layers size={19} aria-hidden="true" /></span>Service Dependency Map</h3><p>A dependency graph connects campus systems such as Wi-Fi, ERP, and authentication.</p></article>
+              <article className="feature-row"><h3><span className="feature-row__icon"><ShieldCheck size={19} aria-hidden="true" /></span>Protected History &amp; SLAs</h3><p>Ticket actions are recorded while SLA timers help staff act within service targets.</p></article>
             </div>
-
-            {/* Web Browser Console Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-cyan-500/60 transition group hover:shadow-2xl hover:shadow-cyan-900/20">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-110 transition">
-                  <Globe className="w-6 h-6" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg text-white">Web Browser</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">
-                    Instant Access
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  Open the full web console immediately in your browser without installing any software.
-                </p>
-                <div className="mt-4 space-y-1.5 text-xs text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Chrome, Edge, Firefox, Safari</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Opens in a clean workspace</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-slate-800/60">
-                <a
-                  href="?app=console"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20 transition"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Launch Web Console</span>
-                </a>
-              </div>
+            <div className="workflow-strip" aria-label="Ticket workflow">
+              <span><ClipboardList size={16} aria-hidden="true" /> Report</span><span>→</span><span>Route and investigate</span><span>→</span><span>Verify resolution</span>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* Architecture Highlights Section */}
-      <section id="features" className="py-20 bg-slate-900 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">
-              How the System Works
-            </h2>
-            <p className="text-sm text-slate-400 mt-2">
-              Designed with clean object-oriented patterns to keep campus IT support predictable and responsive.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
-                <Activity className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-base text-white">Live Event Notifications</h3>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Uses the Observer pattern to push real-time updates to students and technicians as tickets are claimed, investigated, and resolved.
-              </p>
-            </div>
-
-            <div className="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4">
-                <Layers className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-base text-white">Service Dependency Map</h3>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                A directed dependency graph maps campus systems (Wi-Fi, ERP, Auth) to immediately pinpoint downstream service disruptions during outages.
-              </p>
-            </div>
-
-            <div className="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-base text-white">Protected History & SLAs</h3>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Every ticket change is recorded in an immutable audit ledger, while automated SLA timers ensure high-priority incidents get resolved fast.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-950 border-t border-slate-800 py-8 text-center text-xs text-slate-500">
-        <p>BPHC CS F213 OOP Project (2026–2027) &bull; Campus IT HelpDesk</p>
-        <p className="mt-1 text-slate-600">Available on Windows Desktop, Android Mobile, and Web Browsers</p>
-      </footer>
+      <footer className="public-footer"><p>BPHC CS F213 OOP Project (2026–2027) · Campus IT HelpDesk</p><p>Available on Windows desktop, Android mobile, and web browsers.</p></footer>
     </div>
   );
 }

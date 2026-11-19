@@ -25,7 +25,7 @@ import {
 } from 'recharts';
 import ServiceDependencyGraph from '../components/ServiceDependencyGraph';
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+const COLORS = ['var(--color-cool)', 'var(--color-success)', 'var(--color-accent)', 'var(--color-error)', 'var(--color-muted)'];
 
 export default function ItManagerDashboardPage() {
   const [overview, setOverview] = useState(null);
@@ -64,22 +64,20 @@ export default function ItManagerDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="screen-heading">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Helpdesk Operations Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Overview of ticket volumes, team workloads, service health, and resolution performance.
-          </p>
+          <h1>Helpdesk Operations Dashboard</h1>
+          <p>Monitor ticket volumes, team workloads, service health, and resolution performance.</p>
         </div>
         <button
           onClick={fetchDashboardData}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-50 shadow-sm transition disabled:opacity-50"
+          className="secondary-action"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh Metrics
         </button>
-      </div>
+      </header>
 
       {/* Operational Attention Banner */}
       {bottlenecks.length > 0 && (
@@ -87,31 +85,31 @@ export default function ItManagerDashboardPage() {
           {bottlenecks.map((bn) => (
             <div
               key={bn.id}
-              className={`p-4 rounded-xl border flex items-start gap-3 shadow-sm ${
+              className={`p-4 rounded-card border flex items-start gap-3  ${
                 bn.severity === 'CRITICAL'
-                  ? 'bg-red-50 border-red-200 text-red-900'
-                  : 'bg-amber-50 border-amber-200 text-amber-900'
+                  ? 'bg-danger-soft border-danger-soft text-danger'
+                  : 'bg-person-soft border-person-soft text-person'
               }`}
             >
-              <div className="p-2 rounded-lg bg-white/70 shadow-xs">
+              <div className="p-2 rounded-control bg-panel ">
                 {bn.severity === 'CRITICAL' ? (
-                  <AlertOctagon className="w-5 h-5 text-red-600" />
+                  <AlertOctagon className="w-5 h-5 text-danger" />
                 ) : (
-                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                  <AlertTriangle className="w-5 h-5 text-person" />
                 )}
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold">{bn.title}</h3>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/80 border border-current">
+                  <span className="text-xs font-semibold  tracking-normal px-2 py-0.5 rounded-chip bg-panel border border-current">
                     {bn.type}
                   </span>
                 </div>
-                <p className="text-xs mt-1 text-slate-700">{bn.description}</p>
+                <p className="text-xs mt-1 text-secondary">{bn.description}</p>
                 <div className="mt-2 text-xs flex flex-wrap gap-4 font-medium">
                   <span><strong>Metric:</strong> {bn.metricLabel} ({bn.metricValue})</span>
                   <span><strong>Limit:</strong> {bn.thresholdLabel}</span>
-                  <span className="text-blue-700"><strong>Suggested Action:</strong> {bn.recommendation}</span>
+                  <span className="text-instrument"><strong>Suggested Action:</strong> {bn.recommendation}</span>
                 </div>
               </div>
             </div>
@@ -120,73 +118,78 @@ export default function ItManagerDashboardPage() {
       )}
 
       {/* KPI Cards Grid */}
+      <section className="work-section" aria-labelledby="operations-metrics-title">
+      <h2 id="operations-metrics-title" className="work-section__title">At a glance</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-panel p-4 rounded-card border border-rule ">
+          <div className="flex items-center justify-between text-muted mb-2">
             <span className="text-xs font-medium">Total Tickets</span>
-            <Layers className="w-4 h-4 text-blue-500" />
+            <Layers className="w-4 h-4 text-instrument" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{overview?.totalIncidents ?? 0}</div>
-          <div className="text-[11px] text-slate-400 mt-1">All time recorded</div>
+          <div className="text-2xl font-bold text-ink measured">{overview?.totalIncidents ?? 0}</div>
+          <div className="text-xs text-muted mt-1">All time recorded</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-panel p-4 rounded-card border border-rule ">
+          <div className="flex items-center justify-between text-muted mb-2">
             <span className="text-xs font-medium">Active Tickets</span>
-            <Activity className="w-4 h-4 text-amber-500" />
+            <Activity className="w-4 h-4 text-person" />
           </div>
-          <div className="text-2xl font-bold text-amber-600">{overview?.openIncidents ?? 0}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Currently open</div>
+          <div className="text-2xl font-bold text-person measured">{overview?.openIncidents ?? 0}</div>
+          <div className="text-xs text-muted mt-1">Currently open</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-panel p-4 rounded-card border border-rule ">
+          <div className="flex items-center justify-between text-muted mb-2">
             <span className="text-xs font-medium">Critical (P1)</span>
-            <AlertOctagon className="w-4 h-4 text-red-500" />
+            <AlertOctagon className="w-4 h-4 text-danger" />
           </div>
-          <div className="text-2xl font-bold text-red-600">{overview?.criticalIncidents ?? 0}</div>
-          <div className="text-[11px] text-slate-400 mt-1">30-minute target</div>
+          <div className="text-2xl font-bold text-danger measured">{overview?.criticalIncidents ?? 0}</div>
+          <div className="text-xs text-muted mt-1">30-minute target</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-panel p-4 rounded-card border border-rule ">
+          <div className="flex items-center justify-between text-muted mb-2">
             <span className="text-xs font-medium">Resolved</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <CheckCircle2 className="w-4 h-4 text-success" />
           </div>
-          <div className="text-2xl font-bold text-emerald-600">{overview?.resolvedIncidents ?? 0}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Completed tickets</div>
+          <div className="text-2xl font-bold text-success measured">{overview?.resolvedIncidents ?? 0}</div>
+          <div className="text-xs text-muted mt-1">Completed tickets</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-panel p-4 rounded-card border border-rule ">
+          <div className="flex items-center justify-between text-muted mb-2">
             <span className="text-xs font-medium">SLA Compliance</span>
-            <TrendingUp className="w-4 h-4 text-indigo-500" />
+            <TrendingUp className="w-4 h-4 text-instrument" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{overview?.slaCompliancePercentage ?? 100}%</div>
-          <div className="text-[11px] text-slate-400 mt-1">{overview?.slaBreaches ?? 0} late tickets</div>
+          <div className="text-2xl font-bold text-ink measured">{overview?.slaCompliancePercentage ?? 100}%</div>
+          <div className="text-xs text-muted mt-1">{overview?.slaBreaches ?? 0} late tickets</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-panel p-4 rounded-card border border-rule ">
+          <div className="flex items-center justify-between text-muted mb-2">
             <span className="text-xs font-medium">Avg Resolution</span>
-            <Clock className="w-4 h-4 text-purple-500" />
+            <Clock className="w-4 h-4 text-instrument" />
           </div>
-          <div className="text-2xl font-bold text-purple-600">{overview?.averageMttrMinutes ?? 0}m</div>
-          <div className="text-[11px] text-slate-400 mt-1">Average fix time</div>
+          <div className="text-2xl font-bold text-instrument measured">{overview?.averageMttrMinutes ?? 0}m</div>
+          <div className="text-xs text-muted mt-1">Average fix time</div>
         </div>
       </div>
+      </section>
 
       {/* Visual Charts Grid */}
+      <section className="work-section" aria-labelledby="operations-analysis-title">
+      <h2 id="operations-analysis-title" className="work-section__title">Capacity and service health</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Technician Workload Capacity Chart */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-panel p-6 rounded-card border border-rule ">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
+              <h2 className="text-base font-bold text-ink flex items-center gap-2">
+                <Users className="w-5 h-5 text-instrument" />
                 Technician Workload vs Capacity
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted mt-0.5">
                 Active tickets assigned compared to the 5-ticket concurrent capacity limit.
               </p>
             </div>
@@ -202,22 +205,22 @@ export default function ItManagerDashboardPage() {
                     name === 'activeTickets' ? 'Active' : 'Max Limit'
                   ]}
                 />
-                <Bar dataKey="activeTickets" fill="#3b82f6" name="Active Tickets" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="maxWorkload" fill="#e2e8f0" name="Max Capacity" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="activeTickets" fill="var(--color-cool)" name="Active Tickets" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="maxWorkload" fill="var(--color-rule-2)" name="Max Capacity" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Service Incident Distribution Donut */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-panel p-6 rounded-card border border-rule ">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-emerald-600" />
+              <h2 className="text-base font-bold text-ink flex items-center gap-2">
+                <Layers className="w-5 h-5 text-success" />
                 Ticket Distribution by Service
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted mt-0.5">
                 Breakdown of reported issues across campus digital services.
               </p>
             </div>
@@ -246,9 +249,10 @@ export default function ItManagerDashboardPage() {
           </div>
         </div>
       </div>
+      </section>
 
       {/* Service Dependency Graph Component */}
-      <ServiceDependencyGraph />
+      <section className="work-section" aria-label="Service dependency map"><ServiceDependencyGraph /></section>
     </div>
   );
 }

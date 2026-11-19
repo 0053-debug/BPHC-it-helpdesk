@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { History, Search, Shield, Filter, Calendar } from 'lucide-react';
+import { History, Search } from 'lucide-react';
 
 export default function AuditLogsPage() {
   const [logs, setLogs] = useState([]);
@@ -83,97 +83,84 @@ export default function AuditLogsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="screen-heading">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Shield className="w-6 h-6 text-indigo-600" />
-            System Activity & Audit Log
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Permanent, chronological history of all ticket actions, assignments, and status updates.
-          </p>
+          <h1>System Activity &amp; Audit Log</h1>
+          <p>Chronological history of ticket actions, assignments, and status updates.</p>
         </div>
-        <div className="text-xs bg-indigo-50 border border-indigo-200 text-indigo-800 px-3 py-1.5 rounded-lg font-mono">
-          Tamper-Proof Ledger (Trigger-Protected)
-        </div>
-      </div>
+        <span className="status-chip status-chip--instrument">Trigger protected</span>
+      </header>
 
-      {/* Filter Bar */}
-      <form onSubmit={handleSearch} className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-wrap gap-4 items-center">
+      <form onSubmit={handleSearch} className="work-panel flex flex-wrap items-end gap-4" aria-label="Filter audit history">
         <div className="flex-1 min-w-[180px]">
-          <label className="block text-xs font-semibold text-slate-600 mb-1">Ticket ID</label>
+          <label className="block text-xs font-semibold text-secondary mb-1">Ticket ID</label>
           <input
             type="number"
             placeholder="e.g. 101"
             value={incidentId}
             onChange={(e) => setIncidentId(e.target.value)}
-            className="w-full text-sm border border-slate-300 rounded-lg px-3 py-1.5 outline-hidden focus:ring-2 focus:ring-indigo-500"
+            className="w-full text-sm rounded-control px-3 py-1.5"
           />
         </div>
 
         <div className="flex-1 min-w-[180px]">
-          <label className="block text-xs font-semibold text-slate-600 mb-1">Action Filter</label>
+          <label className="block text-xs font-semibold text-secondary mb-1">Action Filter</label>
           <input
             type="text"
             placeholder="e.g. ASSIGN, ACKNOWLEDGE, RESOLVE"
             value={action}
             onChange={(e) => setAction(e.target.value)}
-            className="w-full text-sm border border-slate-300 rounded-lg px-3 py-1.5 outline-hidden focus:ring-2 focus:ring-indigo-500"
+            className="w-full text-sm rounded-control px-3 py-1.5"
           />
         </div>
 
-        <div className="pt-5">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 shadow-xs transition"
-          >
-            <Search className="w-4 h-4" /> Filter Logs
-          </button>
-        </div>
+        <button type="submit" className="secondary-action"><Search size={16} aria-hidden="true" /> Apply filters</button>
       </form>
 
-      {/* Audit Timeline */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <section className="work-section" aria-labelledby="audit-list-title">
+      <div className="screen-heading"><div><h2 id="audit-list-title" className="work-section__title">Recent ticket actions</h2><p>Showing up to 50 entries. Filter by ticket ID or action.</p></div></div>
+      {loading && <p role="status" className="text-sm text-muted">Loading audit history…</p>}
+      <div className="work-panel">
         <div className="space-y-6">
           {logs.length === 0 ? (
-            <div className="py-8 text-center text-slate-400 text-sm">No audit entries found.</div>
+            <div className="py-8 text-center text-muted text-sm">No audit entries found.</div>
           ) : (
             logs.map((logItem, index) => (
               <div key={logItem.id || index} className="flex items-start gap-4 relative">
                 {/* Timeline connector line */}
                 {index !== logs.length - 1 && (
-                  <div className="absolute left-4 top-8 -bottom-6 w-0.5 bg-slate-200" />
+                  <div className="absolute left-4 top-8 -bottom-6 w-0.5 bg-paper" />
                 )}
 
-                <div className="w-8 h-8 rounded-full bg-indigo-50 border-2 border-indigo-500 flex items-center justify-center shrink-0 z-10">
-                  <History className="w-4 h-4 text-indigo-600" />
+                <div className="w-8 h-8 rounded-chip bg-instrument-soft border-2 border-instrument flex items-center justify-center shrink-0 z-10">
+                  <History className="w-4 h-4 text-instrument" />
                 </div>
 
-                <div className="flex-1 bg-slate-50/60 hover:bg-slate-50 p-4 rounded-xl border border-slate-200 transition">
+                <div className="flex-1 rounded-control bg-inset p-4 border border-rule">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-900 uppercase tracking-wider bg-white px-2 py-0.5 rounded border border-slate-200">
+                      <span className="status-chip">
                         {logItem.action}
                       </span>
                       {logItem.incidentId && (
-                        <span className="text-xs font-mono text-blue-600 font-semibold">
+                        <span className="text-xs font-mono text-instrument font-semibold">
                           Incident #{logItem.incidentId}
                         </span>
                       )}
                       {logItem.previousState && logItem.newState && (
-                        <span className="text-xs text-slate-500 font-medium">
+                        <span className="text-xs text-muted font-medium">
                           ({logItem.previousState} &rarr; {logItem.newState})
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-slate-400 font-mono">
+                    <span className="text-xs text-muted font-mono">
                       {new Date(logItem.timestamp).toLocaleString()}
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-700 mt-2 font-medium">{logItem.description}</p>
+                  <p className="text-xs text-secondary mt-2 font-medium">{logItem.description}</p>
 
-                  <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center gap-4 text-[11px] text-slate-500">
+                  <div className="mt-2.5 pt-2 border-t border-rule/60 flex items-center gap-4 text-xs text-muted">
                     <span>
                       Actor: <strong>{logItem.actorName}</strong> ({logItem.actorRole})
                     </span>
@@ -185,6 +172,7 @@ export default function AuditLogsPage() {
           )}
         </div>
       </div>
+      </section>
     </div>
   );
 }

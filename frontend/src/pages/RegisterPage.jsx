@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ArrowUpRight, ClipboardCheck } from 'lucide-react';
 import api from '../services/api';
 
 function errorMessage(error) {
@@ -27,63 +28,30 @@ export default function RegisterPage({ onAuthenticated, onLogin, onHome }) {
   };
 
   return (
-    <section className="max-w-md mx-auto bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
-      {onHome && (
-        <button onClick={onHome} className="text-sm text-blue-700 hover:underline mb-2 block">
-          Back to home
-        </button>
-      )}
-      <h1 className="text-2xl font-bold text-slate-900 mt-5">Create an account</h1>
-      <p className="text-sm text-slate-600 mt-1">Sign up to submit support requests and follow updates.</p>
-      <form onSubmit={submit} className="space-y-4 mt-6">
-        <label className="block text-sm font-medium text-slate-700">
-          Full name
-          <input
-            autoComplete="name"
-            required
-            maxLength={150}
-            value={fullName}
-            onChange={(event) => setFullName(event.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-          />
-        </label>
-        <label className="block text-sm font-medium text-slate-700">
-          Email
-          <input
-            type="email"
-            autoComplete="email"
-            required
-            maxLength={255}
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-          />
-        </label>
-        <label className="block text-sm font-medium text-slate-700">
-          Password (at least 8 characters)
-          <input
-            type="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            maxLength={72}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-          />
-        </label>
-        {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-blue-700 px-4 py-2.5 font-semibold text-white disabled:opacity-60"
-        >
-          {loading ? 'Creating account…' : 'Register'}
-        </button>
-      </form>
-      <p className="text-sm text-slate-600 mt-5">
-        Already registered? <button onClick={onLogin} className="text-blue-700 font-semibold hover:underline">Sign in</button>
-      </p>
+    <section className="auth-layout" aria-labelledby="register-heading">
+      <div className="auth-copy">
+        <h1 id="register-heading">Keep every request in view.</h1>
+        <p>Create an account to submit service requests, read technician updates, and verify a resolution when the work is done.</p>
+        <div className="auth-note"><ClipboardCheck size={16} aria-hidden="true" /><span>One account gives you a clear history of your support requests.</span></div>
+        {onHome && <button type="button" onClick={onHome} className="text-link">Back to HelpDesk home <ArrowUpRight size={15} aria-hidden="true" /></button>}
+      </div>
+      <div className="auth-panel">
+        <div className="auth-panel__head"><h2>Create an account</h2><p>Use your campus name and email address.</p></div>
+        <form onSubmit={submit} className="auth-form">
+          <label>Full name
+            <input autoComplete="name" required maxLength={150} value={fullName} onChange={(event) => setFullName(event.target.value)} />
+          </label>
+          <label>Email
+            <input type="email" autoComplete="email" required maxLength={255} value={email} onChange={(event) => setEmail(event.target.value)} />
+          </label>
+          <label>Password <span className="field-hint">At least 8 characters</span>
+            <input type="password" autoComplete="new-password" required minLength={8} maxLength={72} value={password} onChange={(event) => setPassword(event.target.value)} />
+          </label>
+          {error && <p role="alert" className="notice notice--danger">{error}</p>}
+          <button type="submit" disabled={loading} className="primary-action auth-submit">{loading ? 'Creating account…' : 'Create account'}</button>
+        </form>
+        <p className="auth-panel__switch">Already registered? <button type="button" onClick={onLogin}>Sign in</button></p>
+      </div>
     </section>
   );
 }
