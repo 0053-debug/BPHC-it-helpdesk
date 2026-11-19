@@ -47,6 +47,22 @@ public class TechnicianAssignmentService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<Technician> findTechnician(IncidentCategory category, Priority priority) {
+        if (priority == null) {
+            throw new IitsmException("Incident priority is required for assignment");
+        }
+        AssignmentStrategyType selectedStrategy = activeStrategy.get();
+        List<Technician> technicians = technicianRepository.findAllByActiveTrueOrderByIdAsc();
+        List<Long> technicianIds = technicians.stream().map(Technician::getId).toList();
+        Map<Long, Integer> activeWorkloads = workloadProvider.getActiveWorkloads(technicianIds);
+        Map<Long, TechnicianExpertise> expertise = selectedStrategy == AssignmentStrategyType.PRIORITY_AWARE
+                ? performanceService.getExpertiseScores(category, technicianIds)
+                : Map.of();
+        return strategies.get(selectedStrategy)
+                .assign(category, priority, technicians, activeWorkloads, expertise);
+    }
+
+    @Transactional(readOnly = true)
     public Technician selectTechnician(IncidentCategory category) {
         return selectTechnician(category, Priority.P4_LOW, false);
     }
@@ -62,18 +78,7 @@ public class TechnicianAssignmentService {
         if (selectedStrategy == AssignmentStrategyType.PRIORITY_AWARE && !priorityWasProvided) {
             throw new IitsmException("Incident priority is required for priority-aware assignment");
         }
-        if (priority == null) {
-            throw new IitsmException("Incident priority is required for assignment");
-        }
-        List<Technician> technicians = technicianRepository.findAllByActiveTrueOrderByIdAsc();
-        List<Long> technicianIds = technicians.stream().map(Technician::getId).toList();
-        Map<Long, Integer> activeWorkloads = workloadProvider.getActiveWorkloads(technicianIds);
-        Map<Long, TechnicianExpertise> expertise = selectedStrategy == AssignmentStrategyType.PRIORITY_AWARE
-                ? performanceService.getExpertiseScores(category, technicianIds)
-                : Map.of();
-        return strategies.get(selectedStrategy)
-                .assign(category, priority, technicians, activeWorkloads, expertise)
-                .orElseThrow(NoEligibleTechnicianException::new);
+        return findTechnician(category, priority).orElseThrow(NoEligibleTechnicianException::new);
     }
 
     public AssignmentStrategyResponse getActiveStrategy() {

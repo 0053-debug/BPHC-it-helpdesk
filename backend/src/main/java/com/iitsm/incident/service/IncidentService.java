@@ -117,15 +117,14 @@ public class IncidentService {
         Long id = jdbc.queryForObject("SELECT id FROM incidents WHERE tracking_number = ?", Long.class, trackingNumber);
         Long assignedTechnicianId = null;
         String assignedTechnicianEmail = null;
-        try {
-            var technician = assignmentService.selectTechnician(request.category(), priority);
+        var technicianOpt = assignmentService.findTechnician(request.category(), priority);
+        if (technicianOpt.isPresent()) {
+            var technician = technicianOpt.get();
             lifecycle.transition("CLASSIFIED", "ASSIGNED");
             jdbc.update("UPDATE incidents SET assigned_technician_id=?, status='ASSIGNED', assigned_at=?, updated_at=? WHERE id=?",
                     technician.getId(), Timestamp.from(now), Timestamp.from(now), id);
             assignedTechnicianId = technician.getId();
             assignedTechnicianEmail = technician.getEmail();
-        } catch (NoEligibleTechnicianException ignored) {
-            // The incident remains CLASSIFIED until an eligible technician becomes available.
         }
         publishEvent(id, trackingNumber, reporter, "INCIDENT_CREATED", "INCIDENT_CREATED", "NEW", "CLASSIFIED",
                 parentId == null ? "Incident reported and classified." : "Potential duplicate of incident #" + parentId,
