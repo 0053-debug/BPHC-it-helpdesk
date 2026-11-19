@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import TicketChatWidget from '../components/TicketChatWidget';
 
 
 const categories = ['HARDWARE', 'SOFTWARE', 'NETWORK', 'DATABASE', 'CLOUD', 'SECURITY', 'AUTHENTICATION', 'APPLICATION', 'STORAGE'];
@@ -106,6 +107,6 @@ export default function IncidentWorkspacePage({ currentUser }) {
         </article>}
       </div>
     </section>
-
+    <TicketChatWidget incidents={incidents} selected={selected} />
   </div>;
 }
