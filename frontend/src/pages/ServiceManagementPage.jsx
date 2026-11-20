@@ -67,7 +67,7 @@ export default function ServiceManagementPage() {
       description: s.description || '',
       criticalityFactor: s.criticalityFactor.toString(),
       baseSlaWeight: s.baseSlaWeight,
-      status: s.status,
+      status: s.configuredStatus || s.status,
       baselineMttrMinutes: s.baselineMttrMinutes || 60,
       dependencyIds: Array.from(s.dependencyIds || []),
     });

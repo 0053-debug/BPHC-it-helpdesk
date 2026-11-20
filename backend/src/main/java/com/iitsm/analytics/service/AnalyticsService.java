@@ -31,8 +31,8 @@ public class AnalyticsService {
     public DashboardOverviewDTO getDashboardOverview() {
         try {
             Long total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents", Long.class);
-            Long open = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED')", Long.class);
-            Long critical = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE priority = 'P1_CRITICAL' AND status NOT IN ('CLOSED')", Long.class);
+            Long open = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED','CANCELLED')", Long.class);
+            Long critical = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE priority = 'P1_CRITICAL' AND status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED', 'CANCELLED')", Long.class);
             Long resolved = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE status IN ('RESOLVED', 'VERIFIED', 'CLOSED')", Long.class);
             Long breaches = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE sla_breached = true", Long.class);
 
@@ -117,6 +117,7 @@ public class AnalyticsService {
         List<ServiceHealthDTO> result = new ArrayList<>();
 
         for (ServiceEntity service : services) {
+            long critical = 0;
             long active = 0;
             long total = 0;
             long breaches = 0;
@@ -124,11 +125,13 @@ public class AnalyticsService {
 
             try {
                 Long totalQuery = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE service_id = ?", Long.class, service.getId());
-                Long activeQuery = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE service_id = ? AND status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED')", Long.class, service.getId());
+                Long activeQuery = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE service_id = ? AND status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED', 'CANCELLED')", Long.class, service.getId());
+                Long criticalQuery = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE service_id = ? AND priority = 'P1_CRITICAL' AND status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED', 'CANCELLED')", Long.class, service.getId());
                 Long breachQuery = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM incidents WHERE service_id = ? AND sla_breached = true", Long.class, service.getId());
 
                 total = totalQuery != null ? totalQuery : 0;
                 active = activeQuery != null ? activeQuery : 0;
+                critical = criticalQuery != null ? criticalQuery : 0;
                 breaches = breachQuery != null ? breachQuery : 0;
             } catch (Exception ignored) {}
 
@@ -138,7 +141,15 @@ public class AnalyticsService {
                     .serviceId(service.getId())
                     .serviceName(service.getName())
                     .serviceCode(service.getCode())
-                    .status(service.getStatus())
+                    .status(
+                            service.getStatus() == com.iitsm.servicecatalog.model.ServiceStatus.MAINTENANCE
+                                    ? com.iitsm.servicecatalog.model.ServiceStatus.MAINTENANCE
+                                    : critical > 0
+                                    ? com.iitsm.servicecatalog.model.ServiceStatus.OUTAGE
+                                    : active > 0 || breachRate > 25.0
+                                    ? com.iitsm.servicecatalog.model.ServiceStatus.DEGRADED
+                                    : com.iitsm.servicecatalog.model.ServiceStatus.OPERATIONAL
+                    )
                     .criticality(service.getCriticalityFactor())
                     .activeIncidentsCount(active)
                     .totalIncidentsCount(total)
@@ -146,7 +157,10 @@ public class AnalyticsService {
                     .slaBreachRatePercentage(Math.round(breachRate * 10.0) / 10.0)
                     .baselineMttrMinutes(service.getBaselineMttrMinutes())
                     .actualAvgMttrMinutes(avgMttr)
-                    .isDegraded(breachRate > 25.0 || service.getStatus() != com.iitsm.servicecatalog.model.ServiceStatus.OPERATIONAL)
+                    .isDegraded(
+                            service.getStatus() != com.iitsm.servicecatalog.model.ServiceStatus.MAINTENANCE
+                                    && (critical > 0 || active > 0 || breachRate > 25.0)
+                    )
                     .build());
         }
 
