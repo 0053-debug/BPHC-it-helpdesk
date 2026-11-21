@@ -68,10 +68,11 @@ export function isNativeApp() {
 function getInitialTab(user) {
   const params = new URLSearchParams(window.location.search);
   const requestedTab = params.get('tab');
-  if (requestedTab === 'reset-password' || params.has('token')) {
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  if (pathname.includes('reset-password') || requestedTab === 'reset-password' || params.has('token')) {
     return 'reset-password';
   }
-  if (requestedTab === 'forgot-password') {
+  if (pathname.includes('forgot-password') || requestedTab === 'forgot-password') {
     return 'forgot-password';
   }
   if (isNativeApp()) {
@@ -215,7 +216,18 @@ export default function App() {
           />
         )}
         {activeTab === 'register' && <RegisterPage onAuthenticated={handleAuthenticated} onLogin={() => setActiveTab('login')} />}
-        {activeTab === 'forgot-password' && <ForgotPasswordPage onBackToLogin={() => setActiveTab('login')} />}
+        {activeTab === 'forgot-password' && (
+          <ForgotPasswordPage
+            onBackToLogin={() => setActiveTab('login')}
+            onNavigateToReset={(token) => {
+              const url = new URL(window.location.href);
+              url.searchParams.set('tab', 'reset-password');
+              url.searchParams.set('token', token);
+              window.history.pushState({ tab: 'reset-password' }, '', url);
+              setActiveTab('reset-password');
+            }}
+          />
+        )}
         {activeTab === 'reset-password' && (
           <ResetPasswordPage
             token={new URLSearchParams(window.location.search).get('token')}
