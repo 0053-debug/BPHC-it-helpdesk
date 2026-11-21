@@ -59,7 +59,7 @@
     "appId": "edu.bphc.iitsm",
     "productName": "I-ITSM",
     "directories": {
-      "output": "release"
+      "output": "dist-electron"
     },
     "disableAsarIntegrity": true,
     "files": [

@@ -34,17 +34,17 @@ jobs:
       - run: npm ci
       - name: Build desktop installer
         run: |
-          if [ -z "$VITE_API_BASE_URL" ] || [ -z "$VITE_WS_BASE_URL" ]; then
-            echo "Set VITE_API_BASE_URL and VITE_WS_BASE_URL repository variables to a reachable backend before building desktop apps."
-            exit 1
-          fi
           npm run build
           if [ "${{ matrix.platform }}" = "win" ]; then npx electron-builder --win nsis --x64 --publish never; fi
           if [ "${{ matrix.platform }}" = "mac" ]; then npx electron-builder --mac dmg --universal --publish never; fi
         shell: bash
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
-          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://bphc-it-helpdesk-api.onrender.com/api' }}
+          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL || 'https://bphc-it-helpdesk-api.onrender.com' }}
+          VITE_EMAILJS_SERVICE_ID: ${{ vars.VITE_EMAILJS_SERVICE_ID || 'service_6m74cbi' }}
+          VITE_EMAILJS_PUBLIC_KEY: ${{ vars.VITE_EMAILJS_PUBLIC_KEY || 'CzMJDOJR9b-LtHStA' }}
+          VITE_EMAILJS_TEMPLATE_RESET_SUCCESS: ${{ vars.VITE_EMAILJS_TEMPLATE_RESET_SUCCESS || 'template_q5i4cvk' }}
+          VITE_EMAILJS_TEMPLATE_TICKET_CREATED: ${{ vars.VITE_EMAILJS_TEMPLATE_TICKET_CREATED || 'template_y8gkreo' }}
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.platform }}
@@ -68,19 +68,14 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: npm ci
-      - name: Check API endpoint configuration
-        run: |
-          if [ -z "$VITE_API_BASE_URL" ] || [ -z "$VITE_WS_BASE_URL" ]; then
-            echo "Set VITE_API_BASE_URL and VITE_WS_BASE_URL repository variables to a reachable backend before building the Android app."
-            exit 1
-          fi
-        env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
-          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL }}
       - name: Build Android package
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
-          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://bphc-it-helpdesk-api.onrender.com/api' }}
+          VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL || 'https://bphc-it-helpdesk-api.onrender.com' }}
+          VITE_EMAILJS_SERVICE_ID: ${{ vars.VITE_EMAILJS_SERVICE_ID || 'service_6m74cbi' }}
+          VITE_EMAILJS_PUBLIC_KEY: ${{ vars.VITE_EMAILJS_PUBLIC_KEY || 'CzMJDOJR9b-LtHStA' }}
+          VITE_EMAILJS_TEMPLATE_RESET_SUCCESS: ${{ vars.VITE_EMAILJS_TEMPLATE_RESET_SUCCESS || 'template_q5i4cvk' }}
+          VITE_EMAILJS_TEMPLATE_TICKET_CREATED: ${{ vars.VITE_EMAILJS_TEMPLATE_TICKET_CREATED || 'template_y8gkreo' }}
         run: |
           npm run build
           npx cap sync android
