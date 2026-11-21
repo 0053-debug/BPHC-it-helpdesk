@@ -1,10 +1,14 @@
 package com.iitsm.user.controller;
 
 import com.iitsm.user.dto.AuthResponse;
+import com.iitsm.user.dto.ForgotPasswordRequest;
 import com.iitsm.user.dto.LoginRequest;
+import com.iitsm.user.dto.MessageResponse;
 import com.iitsm.user.dto.RegisterRequest;
 import com.iitsm.user.dto.RegisterResponse;
+import com.iitsm.user.dto.ResetPasswordRequest;
 import com.iitsm.user.service.AuthService;
+import com.iitsm.user.service.PasswordResetService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
         this.authService = authService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/register")
@@ -31,5 +37,17 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        passwordResetService.processForgotPassword(request.email());
+        return ResponseEntity.ok(new MessageResponse("If an account exists for that email, a password reset link has been dispatched to your inbox."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request.token(), request.newPassword());
+        return ResponseEntity.ok(new MessageResponse("Password has been successfully updated. You may now sign in with your new password."));
     }
 }

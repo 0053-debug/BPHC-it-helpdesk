@@ -17,6 +17,7 @@ import com.iitsm.user.security.RestAuthenticationEntryPoint;
 import com.iitsm.user.controller.AssignmentStrategyController;
 import com.iitsm.user.controller.AuthController;
 import com.iitsm.user.service.AuthService;
+import com.iitsm.user.service.PasswordResetService;
 import com.iitsm.user.service.TechnicianAssignmentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,9 @@ class AuthAndSecurityApiTest {
 
     @org.springframework.boot.test.mock.mockito.MockBean
     private AuthService authService;
+
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private PasswordResetService passwordResetService;
 
     @org.springframework.boot.test.mock.mockito.MockBean
     private TechnicianAssignmentService assignmentService;

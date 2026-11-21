@@ -39,16 +39,19 @@ spring:
       mode: ${SPRING_SQL_INIT_MODE:always}
 
   mail:
-    host: ${SPRING_MAIL_HOST:sandbox.smtp.mailtrap.io}
-    port: ${SPRING_MAIL_PORT:2525}
-    username: ${SPRING_MAIL_USERNAME:}
-    password: ${SPRING_MAIL_PASSWORD:}
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:raghuramvedantam16@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:sfev qmku kjlp qphf}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
 
 sla:
   monitor:

@@ -25,7 +25,7 @@ public class EmailNotificationObserver implements IncidentObserver {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username:alerts@bphc-iitsm.internal}")
+    @Value("${spring.mail.username:raghuramvedantam16@gmail.com}")
     private String fromEmail;
 
     @Override

@@ -6,7 +6,7 @@ function errorMessage(error) {
   return error.response?.data?.message || error.message || 'Incorrect email or password. Please try again.';
 }
 
-export default function LoginPage({ onAuthenticated, onRegister }) {
+export default function LoginPage({ onAuthenticated, onRegister, onForgotPassword }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -39,7 +39,17 @@ export default function LoginPage({ onAuthenticated, onRegister }) {
           <label>Email
             <input type="email" autoComplete="email" required maxLength={255} value={email} onChange={(event) => setEmail(event.target.value)} />
           </label>
-          <label>Password
+          <label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Password</span>
+              <button
+                type="button"
+                onClick={onForgotPassword}
+                style={{ background: 'none', border: 'none', color: 'var(--color-cool)', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+              >
+                Forgot password?
+              </button>
+            </div>
             <input type="password" autoComplete="current-password" required maxLength={72} value={password} onChange={(event) => setPassword(event.target.value)} />
           </label>
           {error && <p role="alert" className="notice notice--danger">{error}</p>}

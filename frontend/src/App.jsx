@@ -17,6 +17,8 @@ import AuditLogsPage from './pages/AuditLogsPage';
 import NotificationBell from './components/NotificationBell';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import TechnicianDirectoryPage from './pages/TechnicianDirectoryPage';
 import IncidentWorkspacePage from './pages/IncidentWorkspacePage';
 
@@ -40,7 +42,7 @@ function defaultTab(user) {
 }
 
 function isTabAvailable(user, tab) {
-  if (tab === 'login' || tab === 'register') return true;
+  if (['login', 'register', 'forgot-password', 'reset-password'].includes(tab)) return true;
   if (!user) return false;
   if (tab === 'incidents') return true;
   if (tab === 'technicians') return user.role !== 'ROLE_EMPLOYEE';
@@ -64,13 +66,19 @@ export function isNativeApp() {
 }
 
 function getInitialTab(user) {
+  const params = new URLSearchParams(window.location.search);
+  const requestedTab = params.get('tab');
+  if (requestedTab === 'reset-password' || params.has('token')) {
+    return 'reset-password';
+  }
+  if (requestedTab === 'forgot-password') {
+    return 'forgot-password';
+  }
   if (isNativeApp()) {
     return user ? defaultTab(user) : 'login';
   }
-  const params = new URLSearchParams(window.location.search);
   const isConsole = params.get('app') === 'console' || window.location.pathname === '/console';
   if (!isConsole) return 'landing';
-  const requestedTab = params.get('tab');
   return requestedTab && isTabAvailable(user, requestedTab) ? requestedTab : defaultTab(user);
 }
 
@@ -193,14 +201,27 @@ export default function App() {
           {isManager && <button id="tab-dashboard" type="button" role="tab" aria-selected={activeTab === 'dashboard'} aria-controls="tab-panel" tabIndex={activeTab === 'dashboard' ? 0 : -1} className="console-tab" onClick={() => setActiveTab('dashboard')}><Activity size={16} aria-hidden="true" /><span>Operations</span></button>}
           {isAdmin && <button id="tab-services" type="button" role="tab" aria-selected={activeTab === 'services'} aria-controls="tab-panel" tabIndex={activeTab === 'services' ? 0 : -1} className="console-tab" onClick={() => setActiveTab('services')}><Server size={16} aria-hidden="true" /><span>Services</span></button>}
           {isManager && <button id="tab-audit" type="button" role="tab" aria-selected={activeTab === 'audit'} aria-controls="tab-panel" tabIndex={activeTab === 'audit' ? 0 : -1} className="console-tab" onClick={() => setActiveTab('audit')}><Shield size={16} aria-hidden="true" /><span>Audit log</span></button>}
-          {!currentUser && <button id="tab-login" type="button" role="tab" aria-selected={activeTab === 'login'} aria-controls="tab-panel" tabIndex={activeTab === 'login' ? 0 : -1} className="console-tab" onClick={() => setActiveTab('login')}><LogIn size={16} aria-hidden="true" /><span>Sign in</span></button>}
+          {!currentUser && <button id="tab-login" type="button" role="tab" aria-selected={activeTab === 'login' || activeTab === 'forgot-password' || activeTab === 'reset-password'} aria-controls="tab-panel" tabIndex={activeTab === 'login' ? 0 : -1} className="console-tab" onClick={() => setActiveTab('login')}><LogIn size={16} aria-hidden="true" /><span>Sign in</span></button>}
           {!currentUser && <button id="tab-register" type="button" role="tab" aria-selected={activeTab === 'register'} aria-controls="tab-panel" tabIndex={activeTab === 'register' ? 0 : -1} className="console-tab" onClick={() => setActiveTab('register')}><UserPlus size={16} aria-hidden="true" /><span>Create account</span></button>}
         </nav>
       </header>
 
       <main id="tab-panel" className="console-main" role="tabpanel" aria-labelledby={`tab-${activeTab}`} tabIndex={-1}>
-        {activeTab === 'login' && <LoginPage onAuthenticated={handleAuthenticated} onRegister={() => setActiveTab('register')} />}
+        {activeTab === 'login' && (
+          <LoginPage
+            onAuthenticated={handleAuthenticated}
+            onRegister={() => setActiveTab('register')}
+            onForgotPassword={() => setActiveTab('forgot-password')}
+          />
+        )}
         {activeTab === 'register' && <RegisterPage onAuthenticated={handleAuthenticated} onLogin={() => setActiveTab('login')} />}
+        {activeTab === 'forgot-password' && <ForgotPasswordPage onBackToLogin={() => setActiveTab('login')} />}
+        {activeTab === 'reset-password' && (
+          <ResetPasswordPage
+            token={new URLSearchParams(window.location.search).get('token')}
+            onPasswordResetSuccess={() => setActiveTab('login')}
+          />
+        )}
         {activeTab === 'technicians' && currentUser && <TechnicianDirectoryPage currentUser={currentUser} />}
         {activeTab === 'incidents' && currentUser && <IncidentWorkspacePage currentUser={currentUser} />}
         {activeTab === 'dashboard' && isManager && <ItManagerDashboardPage />}
