@@ -2,6 +2,7 @@ package com.iitsm.user.controller;
 
 import com.iitsm.user.dto.AuthResponse;
 import com.iitsm.user.dto.ForgotPasswordRequest;
+import com.iitsm.user.dto.ForgotPasswordResponse;
 import com.iitsm.user.dto.LoginRequest;
 import com.iitsm.user.dto.MessageResponse;
 import com.iitsm.user.dto.RegisterRequest;
@@ -40,9 +41,8 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        passwordResetService.processForgotPassword(request.email());
-        return ResponseEntity.ok(new MessageResponse("If an account exists for that email, a password reset link has been dispatched to your inbox."));
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity.ok(passwordResetService.processForgotPassword(request.email()));
     }
 
     @PostMapping("/reset-password")

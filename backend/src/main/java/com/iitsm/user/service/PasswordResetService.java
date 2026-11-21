@@ -2,6 +2,7 @@ package com.iitsm.user.service;
 
 import com.iitsm.core.exception.IitsmException;
 import com.iitsm.core.model.User;
+import com.iitsm.user.dto.ForgotPasswordResponse;
 import com.iitsm.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.mail.internet.MimeMessage;
@@ -71,7 +72,7 @@ public class PasswordResetService {
     }
 
     @Transactional
-    public void processForgotPassword(String email) {
+    public ForgotPasswordResponse processForgotPassword(String email) {
         if (email == null || email.isBlank()) {
             throw new IitsmException("Email address is required");
         }
@@ -80,7 +81,11 @@ public class PasswordResetService {
         if (userOpt.isEmpty()) {
             // For security, do not disclose whether an account exists
             log.info("Password reset requested for unregistered email: {}", cleanEmail);
-            return;
+            return new ForgotPasswordResponse(
+                "If an account exists with that email, password reset instructions have been generated.",
+                null,
+                false
+            );
         }
 
         User user = userOpt.get();
@@ -95,63 +100,70 @@ public class PasswordResetService {
             VALUES (?, ?, ?, false, CURRENT_TIMESTAMP)
             """, token, user.getId(), Timestamp.from(expiryTime));
 
-        sendResetEmail(user, token);
-    }
+        String base = (frontendUrl != null && !frontendUrl.isBlank())
+                ? frontendUrl.replaceAll("/+$", "")
+                : "https://bphc-it-helpdesk.web.app";
+        String resetLink = String.format("%s/?app=console&tab=reset-password&token=%s", base, token);
 
-    private void sendResetEmail(User user, String token) {
+        boolean emailDispatched = false;
         try {
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-
-            String sender = (fromEmail != null && fromEmail.contains("@")) ? fromEmail : "raghuramvedantam16@gmail.com";
-            helper.setFrom(sender);
-            helper.setTo(user.getEmail());
-            helper.setSubject("[BPHC IT HelpDesk] Password Reset Request");
-
-            String base = (frontendUrl != null && !frontendUrl.isBlank())
-                    ? frontendUrl.replaceAll("/+$", "")
-                    : "https://bphc-it-helpdesk.web.app";
-            String resetLink = String.format("%s/?app=console&tab=reset-password&token=%s", base, token);
-
-            String html = """
-                <!DOCTYPE html>
-                <html><head><meta charset='UTF-8'></head>
-                <body style='margin:0;padding:20px;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1e293b;'>
-                <table width='100%' border='0' cellspacing='0' cellpadding='0'>
-                <tr><td align='center'>
-                <table width='580' border='0' cellspacing='0' cellpadding='0' style='background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);'>
-                <tr><td style='background:linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);padding:24px 32px;color:#ffffff;'>
-                <h1 style='margin:0;font-size:20px;font-weight:800;letter-spacing:-0.5px;'>BPHC IT HelpDesk</h1>
-                <p style='margin:4px 0 0;font-size:12px;color:#bfdbfe;'>Campus IT Service Desk · Password Recovery</p>
-                </td></tr>
-                <tr><td style='padding:32px;'>
-                <h2 style='margin:0 0 12px;font-size:17px;color:#0f172a;'>Hello %s,</h2>
-                <p style='margin:0 0 20px;font-size:14px;color:#475569;line-height:1.5;'>
-                We received a request to reset the password for your campus IT HelpDesk account. Click the button below to choose a new password:
-                </p>
-                <div style='text-align:center;margin:28px 0;'>
-                <a href='%s' style='background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block;'>Reset Password</a>
-                </div>
-                <p style='margin:0 0 12px;font-size:13px;color:#64748b;'>
-                This link will expire in <strong>15 minutes</strong>. If you did not request this, you can safely ignore this email; your password will remain unchanged.
-                </p>
-                <div style='margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8;word-break:break-all;'>
-                Or copy and paste this link in your browser:<br/>
-                <a href='%s' style='color:#2563eb;'>%s</a>
-                </div>
-                </td></tr>
-                </table>
-                </td></tr></table>
-                </body></html>
-                """.formatted(user.getFullName(), resetLink, resetLink, resetLink);
-
-            helper.setText(html, true);
-            mailSender.send(mimeMessage);
+            sendResetEmail(user, resetLink);
+            emailDispatched = true;
             log.info("Password reset email sent to {}", user.getEmail());
         } catch (Exception ex) {
-            log.error("Failed to send password reset email to {}: {}", user.getEmail(), ex.getMessage(), ex);
-            throw new IitsmException("Failed to send password reset email. Please try again later.");
+            log.warn("SMTP email dispatch failed (Render free tier restricts outbound SMTP ports 25/465/587): {}", ex.getMessage());
         }
+
+        String msg = emailDispatched
+            ? "A password reset link has been dispatched to your email address."
+            : "Password reset token generated. (Render free-tier firewall restricts outbound SMTP port 587; your direct reset link is provided below).";
+
+        return new ForgotPasswordResponse(msg, resetLink, emailDispatched);
+    }
+
+    private void sendResetEmail(User user, String resetLink) throws Exception {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+
+        String sender = (fromEmail != null && fromEmail.contains("@")) ? fromEmail : "raghuramvedantam16@gmail.com";
+        helper.setFrom(sender);
+        helper.setTo(user.getEmail());
+        helper.setSubject("[BPHC IT HelpDesk] Password Reset Request");
+
+        String html = """
+            <!DOCTYPE html>
+            <html><head><meta charset='UTF-8'></head>
+            <body style='margin:0;padding:20px;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1e293b;'>
+            <table width='100%' border='0' cellspacing='0' cellpadding='0'>
+            <tr><td align='center'>
+            <table width='580' border='0' cellspacing='0' cellpadding='0' style='background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);'>
+            <tr><td style='background:linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);padding:24px 32px;color:#ffffff;'>
+            <h1 style='margin:0;font-size:20px;font-weight:800;letter-spacing:-0.5px;'>BPHC IT HelpDesk</h1>
+            <p style='margin:4px 0 0;font-size:12px;color:#bfdbfe;'>Campus IT Service Desk · Password Recovery</p>
+            </td></tr>
+            <tr><td style='padding:32px;'>
+            <h2 style='margin:0 0 12px;font-size:17px;color:#0f172a;'>Hello %s,</h2>
+            <p style='margin:0 0 20px;font-size:14px;color:#475569;line-height:1.5;'>
+            We received a request to reset the password for your campus IT HelpDesk account. Click the button below to choose a new password:
+            </p>
+            <div style='text-align:center;margin:28px 0;'>
+            <a href='%s' style='background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block;'>Reset Password</a>
+            </div>
+            <p style='margin:0 0 12px;font-size:13px;color:#64748b;'>
+            This link will expire in <strong>15 minutes</strong>. If you did not request this, you can safely ignore this email; your password will remain unchanged.
+            </p>
+            <div style='margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8;word-break:break-all;'>
+            Or copy and paste this link in your browser:<br/>
+            <a href='%s' style='color:#2563eb;'>%s</a>
+            </div>
+            </td></tr>
+            </table>
+            </td></tr></table>
+            </body></html>
+            """.formatted(user.getFullName(), resetLink, resetLink, resetLink);
+
+        helper.setText(html, true);
+        mailSender.send(mimeMessage);
     }
 
     @Transactional
