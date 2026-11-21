@@ -52,6 +52,9 @@ spring:
             required: true
           ssl:
             trust: smtp.gmail.com
+          connectiontimeout: 3000
+          timeout: 3000
+          writetimeout: 3000
 
 sla:
   monitor:

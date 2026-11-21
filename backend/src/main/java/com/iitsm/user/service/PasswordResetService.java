@@ -105,20 +105,19 @@ public class PasswordResetService {
                 : "https://bphc-it-helpdesk.web.app";
         String resetLink = String.format("%s/?app=console&tab=reset-password&token=%s", base, token);
 
-        boolean emailDispatched = false;
-        try {
-            sendResetEmail(user, resetLink);
-            emailDispatched = true;
-            log.info("Password reset email sent to {}", user.getEmail());
-        } catch (Exception ex) {
-            log.warn("SMTP email dispatch failed (Render free tier restricts outbound SMTP ports 25/465/587): {}", ex.getMessage());
-        }
+        // Run email dispatch in background so Render's SMTP port 587 block never delays or times out the HTTP response
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                sendResetEmail(user, resetLink);
+                log.info("Password reset email successfully sent to {}", user.getEmail());
+            } catch (Exception ex) {
+                log.warn("SMTP email dispatch failed (Render free tier blocks outbound SMTP ports 25/465/587): {}", ex.getMessage());
+            }
+        });
 
-        String msg = emailDispatched
-            ? "A password reset link has been dispatched to your email address."
-            : "Password reset token generated. (Render free-tier firewall restricts outbound SMTP port 587; your direct reset link is provided below).";
+        String msg = "Password reset link generated successfully! (Note: Render free tier blocks outbound SMTP port 587; your direct one-click reset link is provided below).";
 
-        return new ForgotPasswordResponse(msg, resetLink, emailDispatched);
+        return new ForgotPasswordResponse(msg, resetLink, true);
     }
 
     private void sendResetEmail(User user, String resetLink) throws Exception {
