@@ -12,6 +12,7 @@ function resolveBaseUrl() {
 
 const api = axios.create({
   baseURL: resolveBaseUrl(),
+  timeout: 45000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,5 +26,18 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Provide user-friendly errors for network timeouts and waking up cold backend
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ECONNABORTED' || (error.message && error.message.toLowerCase().includes('timeout'))) {
+      error.message = 'The cloud server took longer than expected to wake up. Please click again — it responds immediately once awake.';
+    } else if (!error.response && error.message === 'Network Error') {
+      error.message = 'Unable to connect to the cloud server. Please check your internet connection.';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

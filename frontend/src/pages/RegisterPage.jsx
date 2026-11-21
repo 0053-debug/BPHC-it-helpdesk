@@ -3,7 +3,7 @@ import { ClipboardCheck } from 'lucide-react';
 import api from '../services/api';
 
 function errorMessage(error) {
-  return error.response?.data?.message || 'Could not create account. Please check your details and try again.';
+  return error.response?.data?.message || error.message || 'Could not create account. Please check your details and try again.';
 }
 
 export default function RegisterPage({ onAuthenticated, onLogin }) {
@@ -47,6 +47,7 @@ export default function RegisterPage({ onAuthenticated, onLogin }) {
             <input type="password" autoComplete="new-password" required minLength={8} maxLength={72} value={password} onChange={(event) => setPassword(event.target.value)} />
           </label>
           {error && <p role="alert" className="notice notice--danger">{error}</p>}
+          {loading && <p className="priority-note" style={{ margin: 0, textAlign: 'center' }}>Connecting to cloud server… (If waking from sleep, may take ~20s)</p>}
           <button type="submit" disabled={loading} className="primary-action auth-submit">{loading ? 'Creating account…' : 'Create account'}</button>
         </form>
         <p className="auth-panel__switch">Already registered? <button type="button" onClick={onLogin}>Sign in</button></p>

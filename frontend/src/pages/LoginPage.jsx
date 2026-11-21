@@ -3,7 +3,7 @@ import { Link2 } from 'lucide-react';
 import api from '../services/api';
 
 function errorMessage(error) {
-  return error.response?.data?.message || 'Incorrect email or password. Please try again.';
+  return error.response?.data?.message || error.message || 'Incorrect email or password. Please try again.';
 }
 
 export default function LoginPage({ onAuthenticated, onRegister }) {
@@ -43,6 +43,7 @@ export default function LoginPage({ onAuthenticated, onRegister }) {
             <input type="password" autoComplete="current-password" required maxLength={72} value={password} onChange={(event) => setPassword(event.target.value)} />
           </label>
           {error && <p role="alert" className="notice notice--danger">{error}</p>}
+          {loading && <p className="priority-note" style={{ margin: 0, textAlign: 'center' }}>Connecting to cloud server… (If waking from sleep, may take ~20s)</p>}
           <button type="submit" disabled={loading} className="primary-action auth-submit">{loading ? 'Signing in…' : 'Continue'}</button>
         </form>
         <p className="auth-panel__switch">New to the portal? <button type="button" onClick={onRegister}>Create an account</button></p>
