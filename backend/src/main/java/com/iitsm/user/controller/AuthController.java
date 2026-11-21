@@ -11,6 +11,7 @@ import com.iitsm.user.dto.ResetPasswordRequest;
 import com.iitsm.user.service.AuthService;
 import com.iitsm.user.service.PasswordResetService;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,8 +47,12 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        passwordResetService.resetPassword(request.token(), request.newPassword());
-        return ResponseEntity.ok(new MessageResponse("Password has been successfully updated. You may now sign in with your new password."));
+    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        var user = passwordResetService.resetPassword(request.token(), request.newPassword());
+        return ResponseEntity.ok(Map.of(
+            "message", "Password has been successfully updated. You may now sign in with your new password.",
+            "email", user.getEmail(),
+            "fullName", user.getFullName() != null ? user.getFullName() : "User"
+        ));
     }
 }

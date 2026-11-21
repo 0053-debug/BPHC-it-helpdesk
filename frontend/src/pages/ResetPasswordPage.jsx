@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, KeyRound, ShieldAlert } from 'lucide-react';
 import api from '../services/api';
+import { sendPasswordResetSuccessEmail } from '../services/emailService';
 
 function errorMessage(error) {
   return error.response?.data?.message || error.message || 'Could not reset password. The link may have expired or is invalid.';
@@ -43,6 +44,12 @@ export default function ResetPasswordPage({ token: initialToken, onPasswordReset
         newPassword,
       });
       setSuccess(data.message || 'Password has been successfully updated! You can now log in.');
+      if (data?.email) {
+        sendPasswordResetSuccessEmail({
+          toEmail: data.email,
+          recipientName: data.fullName || 'User',
+        }).catch((e) => console.warn('Could not dispatch password update email:', e));
+      }
     } catch (requestError) {
       setError(errorMessage(requestError));
     } finally {

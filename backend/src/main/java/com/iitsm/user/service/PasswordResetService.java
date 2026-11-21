@@ -166,7 +166,7 @@ public class PasswordResetService {
     }
 
     @Transactional
-    public void resetPassword(String token, String newPassword) {
+    public User resetPassword(String token, String newPassword) {
         if (newPassword == null || newPassword.getBytes(StandardCharsets.UTF_8).length < 8
                 || newPassword.getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new IitsmException("Password must be between 8 and 72 characters");
@@ -203,5 +203,6 @@ public class PasswordResetService {
         // Mark token as used
         jdbc.update("UPDATE password_reset_tokens SET used = true WHERE token = ?", token);
         log.info("Password successfully reset for user ID: {}", userId);
+        return user;
     }
 }

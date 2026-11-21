@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import TicketChatWidget from '../components/TicketChatWidget';
+import { sendTicketCreatedEmail } from '../services/emailService';
 
 
 const categories = ['HARDWARE', 'SOFTWARE', 'NETWORK', 'DATABASE', 'CLOUD', 'SECURITY', 'AUTHENTICATION', 'APPLICATION', 'STORAGE'];
@@ -48,6 +49,16 @@ export default function IncidentWorkspacePage({ currentUser }) {
     try {
       const { data } = await api.post('/incidents', { ...form, serviceId: Number(form.serviceId) });
       setForm((old) => ({ ...old, title: '', description: '' })); await refresh(); await openIncident(data);
+      if (currentUser?.email) {
+        sendTicketCreatedEmail({
+          toEmail: currentUser.email,
+          userName: currentUser.fullName || currentUser.username || 'User',
+          ticketId: data.trackingNumber || data.id,
+          title: data.title,
+          priority: data.priority,
+          assignedTo: data.technicianName || 'Automatic Assignment Pool',
+        }).catch((err) => console.warn('Could not dispatch ticket confirmation email:', err));
+      }
     } catch (e) { setError(e.response?.data?.message || 'Could not submit incident.'); }
     finally { setLoading(false); }
   };

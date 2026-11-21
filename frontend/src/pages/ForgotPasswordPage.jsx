@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, CheckCircle2, KeyRound, Mail } from 'lucide-react';
 import api from '../services/api';
+import { sendPasswordResetEmail, isEmailConfigured } from '../services/emailService';
 
 function errorMessage(error) {
   return error.response?.data?.message || error.message || 'Could not send reset link. Please check your email and try again.';
@@ -11,6 +12,7 @@ export default function ForgotPasswordPage({ onBackToLogin }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [resetLink, setResetLink] = useState('');
+  const [emailSentDirectly, setEmailSentDirectly] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const submit = async (event) => {
@@ -18,13 +20,29 @@ export default function ForgotPasswordPage({ onBackToLogin }) {
     setError('');
     setSuccess('');
     setResetLink('');
+    setEmailSentDirectly(false);
     setLoading(true);
     try {
       const { data } = await api.post('/auth/forgot-password', { email });
-      setSuccess(data.message || 'Password reset link generated.');
-      if (data.resetLink) {
-        setResetLink(data.resetLink);
+      const generatedLink = data.resetLink;
+      if (generatedLink) {
+        setResetLink(generatedLink);
       }
+
+      let directSent = false;
+      if (generatedLink && isEmailConfigured()) {
+        const emailRes = await sendPasswordResetEmail({ toEmail: email, resetLink: generatedLink });
+        if (emailRes.sent) {
+          directSent = true;
+          setEmailSentDirectly(true);
+        }
+      }
+
+      const statusMsg = directSent
+        ? `A reset link was generated and dispatched to ${email} via EmailJS.`
+        : (data.message || 'Password reset link generated.');
+
+      setSuccess(statusMsg);
     } catch (requestError) {
       setError(errorMessage(requestError));
     } finally {
