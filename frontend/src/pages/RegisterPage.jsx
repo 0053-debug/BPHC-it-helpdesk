@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, ClipboardCheck } from 'lucide-react';
+import { ClipboardCheck } from 'lucide-react';
 import api from '../services/api';
 
 function errorMessage(error) {
   return error.response?.data?.message || 'Could not create account. Please check your details and try again.';
 }
 
-export default function RegisterPage({ onAuthenticated, onLogin, onHome }) {
+export default function RegisterPage({ onAuthenticated, onLogin }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,7 +33,6 @@ export default function RegisterPage({ onAuthenticated, onLogin, onHome }) {
         <h1 id="register-heading">Keep every request in view.</h1>
         <p>Create an account to submit service requests, read technician updates, and verify a resolution when the work is done.</p>
         <div className="auth-note"><ClipboardCheck size={16} aria-hidden="true" /><span>One account gives you a clear history of your support requests.</span></div>
-        {onHome && <button type="button" onClick={onHome} className="text-link">Back to HelpDesk home <ArrowUpRight size={15} aria-hidden="true" /></button>}
       </div>
       <div className="auth-panel">
         <div className="auth-panel__head"><h2>Create an account</h2><p>Use your campus name and email address.</p></div>

@@ -49,7 +49,24 @@ function isTabAvailable(user, tab) {
   return false;
 }
 
+export function isNativeApp() {
+  if (typeof window === 'undefined') return false;
+  const protocol = window.location.protocol;
+  const ua = window.navigator.userAgent || '';
+  const origin = window.location.origin || '';
+  const hostname = window.location.hostname || '';
+
+  if (window.Capacitor || protocol === 'capacitor:' || origin.includes('capacitor://')) return true;
+  if (ua.includes('Electron') || protocol === 'iitsm:' || window.process?.type === 'renderer') return true;
+  if (protocol === 'file:') return true;
+  if ((hostname === 'localhost' || hostname === '127.0.0.1') && window.location.port !== '5173') return true;
+  return false;
+}
+
 function getInitialTab(user) {
+  if (isNativeApp()) {
+    return user ? defaultTab(user) : 'login';
+  }
   const params = new URLSearchParams(window.location.search);
   const isConsole = params.get('app') === 'console' || window.location.pathname === '/console';
   if (!isConsole) return 'landing';
@@ -61,14 +78,15 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(readStoredUser);
   const [activeTab, setActiveTab] = useState(() => getInitialTab(readStoredUser()));
 
+  const isNative = isNativeApp();
   const params = new URLSearchParams(window.location.search);
-  const isConsoleMode = params.get('app') === 'console' || window.location.pathname === '/console';
+  const isConsoleMode = isNative || params.get('app') === 'console' || window.location.pathname === '/console' || activeTab !== 'landing';
   const isManager = currentUser && ['ROLE_ADMIN', 'ROLE_TEAM_LEAD'].includes(currentUser.role);
   const isAdmin = currentUser?.role === 'ROLE_ADMIN';
   const isEmployee = currentUser?.role === 'ROLE_EMPLOYEE';
 
   useEffect(() => {
-    if (!isConsoleMode) return;
+    if (!isConsoleMode || activeTab === 'landing') return;
     const url = new URL(window.location.href);
     const currentTab = url.searchParams.get('tab');
     if (currentTab === activeTab) return;
@@ -127,28 +145,45 @@ export default function App() {
     document.getElementById(`tab-${tabs[nextIndex].id}`)?.focus();
   };
 
-  if (!isConsoleMode && activeTab === 'landing') return <LandingPage />;
+  if (!isNative && !isConsoleMode && activeTab === 'landing') {
+    return (
+      <LandingPage
+        onEnterConsole={(tab) => {
+          const target = tab && isTabAvailable(currentUser, tab) ? tab : (currentUser ? defaultTab(currentUser) : 'login');
+          setActiveTab(target);
+          const url = new URL(window.location.href);
+          url.searchParams.set('app', 'console');
+          url.searchParams.set('tab', target);
+          window.history.pushState({ tab: target }, '', url);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="console-shell">
       <header className="console-topbar">
         <div className="console-topbar__inner">
-          <a className="console-brand" href="/" aria-label="BPHC IT HelpDesk home">
+          <button
+            type="button"
+            className="console-brand"
+            onClick={() => setActiveTab(currentUser ? defaultTab(currentUser) : 'login')}
+            aria-label="BPHC IT HelpDesk console"
+            style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
+          >
             <span className="console-brand__mark"><Cpu size={19} aria-hidden="true" /></span>
             <span>
               <span className="console-brand__title">BPHC IT HelpDesk</span>
               <span className="console-brand__subline">Campus IT service desk · v1.1</span>
             </span>
-          </a>
+          </button>
           <div className="console-tools">
             {currentUser && <span className="console-user">{currentUser.fullName}</span>}
             {currentUser && <NotificationBell userId={currentUser.id} />}
-            {currentUser ? (
+            {currentUser && (
               <button className="console-icon-button" onClick={logout} title="Sign out" aria-label="Sign out">
                 <LogOut size={17} aria-hidden="true" />
               </button>
-            ) : (
-              <a className="console-home-link" href="/">HelpDesk home</a>
             )}
           </div>
         </div>

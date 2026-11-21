@@ -37,7 +37,7 @@ const platforms = [
   },
 ];
 
-export default function LandingPage() {
+export default function LandingPage({ onEnterConsole }) {
   const [activePlatform, setActivePlatform] = useState('web');
   const tabRefs = useRef([]);
   const scrollTo = (id) => (event) => {
@@ -46,10 +46,14 @@ export default function LandingPage() {
   };
 
   const openConsole = (tab) => {
+    if (onEnterConsole) {
+      onEnterConsole(tab);
+      return;
+    }
     const url = new URL(window.location.origin + window.location.pathname);
     url.searchParams.set('app', 'console');
     if (tab) url.searchParams.set('tab', tab);
-    window.open(url.toString(), '_blank', 'noopener,noreferrer');
+    window.location.href = url.toString();
   };
 
   const handleDownloadTabs = (event, index) => {
@@ -86,7 +90,7 @@ export default function LandingPage() {
             <p className="public-hero__lead">Report Wi-Fi issues, lab system faults, and hostel network problems. Track updates from your browser, Windows desktop, or Android phone.</p>
             <div className="public-actions">
               <a className="public-action public-action--primary" href="#downloads" onClick={scrollTo('downloads')}><Download size={17} aria-hidden="true" /> Get the apps</a>
-              <a className="public-action" href="?app=console" target="_blank" rel="noopener noreferrer"><Globe size={17} aria-hidden="true" /> Open in browser</a>
+              <button type="button" className="public-action" onClick={() => openConsole('login')}><Globe size={17} aria-hidden="true" /> Open in browser</button>
             </div>
           </div>
           <div className="public-hero__aside" aria-label="HelpDesk features">
@@ -126,7 +130,7 @@ export default function LandingPage() {
                 <span className="download-panel__icon"><Icon size={26} aria-hidden="true" /></span>
                 {platform.id === 'windows' && <a className="public-action public-action--primary" href={`${release}/I-ITSM-win-x64-${version}.exe`} download><Download size={16} aria-hidden="true" />{platform.action}<ArrowRight size={15} aria-hidden="true" /></a>}
                 {platform.id === 'android' && <a className="public-action public-action--primary" href={`${release}/I-ITSM-android-debug-${version}.apk`} download><Download size={16} aria-hidden="true" />{platform.action}<ArrowRight size={15} aria-hidden="true" /></a>}
-                {platform.id === 'web' && <a className="public-action public-action--primary" href="?app=console" target="_blank" rel="noopener noreferrer"><ExternalLink size={16} aria-hidden="true" />{platform.action}<ArrowRight size={15} aria-hidden="true" /></a>}
+                {platform.id === 'web' && <button type="button" className="public-action public-action--primary" onClick={() => openConsole('login')}><ExternalLink size={16} aria-hidden="true" />{platform.action}<ArrowRight size={15} aria-hidden="true" /></button>}
               </div>
             </article>;
             })}
