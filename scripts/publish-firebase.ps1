@@ -14,6 +14,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location (Join-Path $projectRoot "frontend")
 
 $env:VITE_API_BASE_URL = "$TunnelUrl/api"
+$env:VITE_WS_BASE_URL = $TunnelUrl
 npm run build
 
 Write-Host "`n====================================================" -ForegroundColor Cyan

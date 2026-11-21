@@ -2,6 +2,10 @@ server:
   port: ${PORT:8080}
   servlet:
     context-path: /
+  tomcat:
+    threads:
+      max: 30
+      min-spare: 4
 
 spring:
   application:
