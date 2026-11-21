@@ -1,9 +1,17 @@
 import axios from 'axios';
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+const DEFAULT_CLOUD_API = 'https://bphc-it-helpdesk-api.onrender.com/api';
+
+function resolveBaseUrl() {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+  return DEFAULT_CLOUD_API;
+}
 
 const api = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: resolveBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },

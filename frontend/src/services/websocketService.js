@@ -1,7 +1,17 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-const webSocketBaseUrl = import.meta.env.VITE_WS_BASE_URL || '';
+const DEFAULT_CLOUD_WS = 'https://bphc-it-helpdesk-api.onrender.com';
+
+function resolveWsUrl() {
+  const envUrl = import.meta.env.VITE_WS_BASE_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+  return DEFAULT_CLOUD_WS;
+}
+
+const webSocketBaseUrl = resolveWsUrl();
 
 class WebSocketService {
   constructor() {
