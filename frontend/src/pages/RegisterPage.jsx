@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AlertCircle, ArrowRight, ClipboardCheck, RefreshCw, UserCheck } from 'lucide-react';
 import api from '../services/api';
+import { sendWelcomeEmail } from '../services/emailService';
 
 export default function RegisterPage({ onAuthenticated, onLogin, initialEmail = '' }) {
   const [fullName, setFullName] = useState('');
@@ -36,6 +37,11 @@ export default function RegisterPage({ onAuthenticated, onLogin, initialEmail = 
 
     try {
       const { data } = await api.post('/auth/register', { fullName, email, password });
+      try {
+        sendWelcomeEmail({ toEmail: email, userName: fullName, role: 'Student / Employee' });
+      } catch (e) {
+        console.warn('Welcome email dispatch skipped:', e);
+      }
       onAuthenticated(data);
     } catch (requestError) {
       const msg = requestError.response?.data?.message || requestError.message || '';
