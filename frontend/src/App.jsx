@@ -17,7 +17,6 @@ import ItManagerDashboardPage from './pages/ItManagerDashboardPage';
 import ServiceManagementPage from './pages/ServiceManagementPage';
 import AuditLogsPage from './pages/AuditLogsPage';
 import NotificationBell from './components/NotificationBell';
-import EmailCenterModal from './components/EmailCenterModal';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -64,12 +63,10 @@ export function isNativeApp() {
   const protocol = window.location.protocol;
   const ua = window.navigator.userAgent || '';
   const origin = window.location.origin || '';
-  const hostname = window.location.hostname || '';
 
-  if (window.Capacitor || protocol === 'capacitor:' || origin.includes('capacitor://')) return true;
+  if (protocol === 'capacitor:' || origin.startsWith('capacitor://')) return true;
   if (ua.includes('Electron') || protocol === 'iitsm:' || window.process?.type === 'renderer') return true;
   if (protocol === 'file:') return true;
-  if ((hostname === 'localhost' || hostname === '127.0.0.1') && window.location.port !== '5173') return true;
   return false;
 }
 
@@ -95,7 +92,6 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(readStoredUser);
   const [activeTab, setActiveTab] = useState(() => getInitialTab(readStoredUser()));
   const [prefilledEmail, setPrefilledEmail] = useState('');
-  const [showEmailCenter, setShowEmailCenter] = useState(false);
 
   const isNative = isNativeApp();
   const params = new URLSearchParams(window.location.search);
@@ -207,28 +203,6 @@ export default function App() {
             </span>
           </button>
           <div className="console-tools">
-            <button
-              type="button"
-              className="console-icon-button"
-              onClick={() => setShowEmailCenter(true)}
-              title="Campus Email Templates & Live Dispatch Center"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 10px',
-                fontSize: '12px',
-                fontWeight: 600,
-                borderRadius: '6px',
-                border: '1px solid #334155',
-                background: 'rgba(56, 189, 248, 0.12)',
-                color: '#38bdf8',
-                cursor: 'pointer',
-              }}
-            >
-              <Mail size={15} />
-              <span>Email Templates (7)</span>
-            </button>
             {currentUser && <span className="console-user">{currentUser.fullName}</span>}
             {currentUser && <NotificationBell userId={currentUser.id} />}
             {currentUser && (
@@ -298,12 +272,6 @@ export default function App() {
       </main>
 
       <footer className="console-footer">BPHC CS F213 OOP Project (2026–2027) · Campus IT HelpDesk</footer>
-
-      <EmailCenterModal
-        isOpen={showEmailCenter}
-        onClose={() => setShowEmailCenter(false)}
-        defaultEmail={currentUser?.email}
-      />
     </div>
   );
 }
