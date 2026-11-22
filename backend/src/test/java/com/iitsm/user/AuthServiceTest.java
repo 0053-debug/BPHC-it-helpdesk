@@ -18,6 +18,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,6 +50,7 @@ class AuthServiceTest {
                 .passwordHash("$2a$10$hash")
                 .role(UserRole.ROLE_EMPLOYEE)
                 .build();
+        when(userService.findByEmail("person@example.edu")).thenReturn(Optional.of(user));
         when(userService.requireByEmail("person@example.edu")).thenReturn(user);
         when(tokenProvider.issueToken(user)).thenReturn("signed-jwt");
 
@@ -64,6 +67,14 @@ class AuthServiceTest {
 
     @Test
     void incorrectCredentialsProduceUnauthorizedDomainError() {
+        User user = User.builder()
+                .id(2L)
+                .fullName("Employee")
+                .email("person@example.edu")
+                .passwordHash("$2a$10$hash")
+                .role(UserRole.ROLE_EMPLOYEE)
+                .build();
+        when(userService.findByEmail("person@example.edu")).thenReturn(Optional.of(user));
         when(authenticationManager.authenticate(any()))
                 .thenThrow(new BadCredentialsException("wrong password"));
 
