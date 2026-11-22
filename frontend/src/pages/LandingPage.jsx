@@ -26,23 +26,38 @@ function formatBytes(bytes) {
   return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
 }
 
+function formatReleaseDate(dateString) {
+  if (!dateString) return null;
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return null;
+  }
+}
+
 export default function LandingPage({ onEnterConsole }) {
   const [activePlatform, setActivePlatform] = useState('windows');
   const [releaseData, setReleaseData] = useState({
     version: FALLBACK_VERSION,
     tagName: `v${FALLBACK_VERSION}`,
-    publishedAt: null,
+    publishedAt: 'Nov 22, 2026',
     htmlUrl: GITHUB_RELEASES_PAGE,
     assets: {
       windows: {
         name: `I-ITSM-win-x64-${FALLBACK_VERSION}.exe`,
         url: `https://github.com/${GITHUB_REPO}/releases/download/v${FALLBACK_VERSION}/I-ITSM-win-x64-${FALLBACK_VERSION}.exe`,
-        size: '119.8 MB',
+        size: '120.0 MB',
+        updatedAt: 'Nov 22, 2026',
       },
       android: {
         name: `I-ITSM-android-debug-${FALLBACK_VERSION}.apk`,
         url: `https://github.com/${GITHUB_REPO}/releases/download/v${FALLBACK_VERSION}/I-ITSM-android-debug-${FALLBACK_VERSION}.apk`,
         size: '4.9 MB',
+        updatedAt: 'Nov 22, 2026',
       },
     },
     isLoaded: false,
@@ -55,7 +70,7 @@ export default function LandingPage({ onEnterConsole }) {
 
     async function fetchLatestRelease() {
       try {
-        const cached = sessionStorage.getItem('iitsm_gh_release');
+        const cached = sessionStorage.getItem('iitsm_gh_release_v3');
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Date.now() - parsed.timestamp < 15 * 60 * 1000) {
@@ -83,16 +98,14 @@ export default function LandingPage({ onEnterConsole }) {
         const winAsset = assetsList.find((a) => a.name.toLowerCase().endsWith('.exe'));
         const androidAsset = assetsList.find((a) => a.name.toLowerCase().endsWith('.apk'));
 
-        let formattedDate = null;
-        if (data.published_at) {
-          try {
-            formattedDate = new Date(data.published_at).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            });
-          } catch {}
-        }
+        const latestTimestamp = [winAsset?.updated_at, androidAsset?.updated_at, data.published_at]
+          .filter(Boolean)
+          .sort()
+          .reverse()[0];
+
+        const formattedDate = formatReleaseDate(latestTimestamp || data.published_at);
+        const winDate = formatReleaseDate(winAsset?.updated_at || latestTimestamp || data.published_at);
+        const androidDate = formatReleaseDate(androidAsset?.updated_at || latestTimestamp || data.published_at);
 
         const updated = {
           version: cleanVersion,
@@ -106,6 +119,7 @@ export default function LandingPage({ onEnterConsole }) {
                 winAsset?.browser_download_url ||
                 `https://github.com/${GITHUB_REPO}/releases/download/${rawTag}/I-ITSM-win-x64-${cleanVersion}.exe`,
               size: winAsset ? formatBytes(winAsset.size) : '',
+              updatedAt: winDate,
             },
             android: {
               name: androidAsset?.name || `I-ITSM-android-debug-${cleanVersion}.apk`,
@@ -113,6 +127,7 @@ export default function LandingPage({ onEnterConsole }) {
                 androidAsset?.browser_download_url ||
                 `https://github.com/${GITHUB_REPO}/releases/download/${rawTag}/I-ITSM-android-debug-${cleanVersion}.apk`,
               size: androidAsset ? formatBytes(androidAsset.size) : '',
+              updatedAt: androidDate,
             },
           },
           isLoaded: true,
@@ -121,7 +136,7 @@ export default function LandingPage({ onEnterConsole }) {
         if (isMounted) {
           setReleaseData(updated);
           try {
-            sessionStorage.setItem('iitsm_gh_release', JSON.stringify({ data: updated, timestamp: Date.now() }));
+            sessionStorage.setItem('iitsm_gh_release_v3', JSON.stringify({ data: updated, timestamp: Date.now() }));
           } catch {}
         }
       } catch {
@@ -148,7 +163,9 @@ export default function LandingPage({ onEnterConsole }) {
         releaseData.assets.windows.name
           ? `${releaseData.assets.windows.name} ${releaseData.assets.windows.size ? `(${releaseData.assets.windows.size})` : ''}`
           : 'Self-contained desktop package',
-        releaseData.publishedAt ? `Release date: ${releaseData.publishedAt}` : 'Always current with latest cloud build',
+        releaseData.assets.windows.updatedAt
+          ? `Build date: ${releaseData.assets.windows.updatedAt}`
+          : (releaseData.publishedAt ? `Build date: ${releaseData.publishedAt}` : 'Always current with latest cloud build'),
       ],
       action: `Download Windows app${releaseData.assets.windows.size ? ` (${releaseData.assets.windows.size})` : ''}`,
       downloadUrl: releaseData.assets.windows.url,
@@ -166,7 +183,9 @@ export default function LandingPage({ onEnterConsole }) {
         releaseData.assets.android.name
           ? `${releaseData.assets.android.name} ${releaseData.assets.android.size ? `(${releaseData.assets.android.size})` : ''}`
           : 'Direct APK installation',
-        releaseData.publishedAt ? `Release date: ${releaseData.publishedAt}` : 'Always current with latest cloud build',
+        releaseData.assets.windows.updatedAt
+          ? `Build date: ${releaseData.assets.windows.updatedAt}`
+          : (releaseData.publishedAt ? `Build date: ${releaseData.publishedAt}` : 'Always current with latest cloud build'),
       ],
       action: `Download Android APK${releaseData.assets.android.size ? ` (${releaseData.assets.android.size})` : ''}`,
       downloadUrl: releaseData.assets.android.url,
