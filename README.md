@@ -111,10 +111,12 @@ I-ITSM is built to run across client environments with a single shared design sy
 2. **Windows Desktop App (`.exe`)**:
    - Standalone 64-bit desktop package built using **Electron Builder**.
    - Native OS window controls, system tray alerts, and isolated execution.
+   - [Download Windows Installer (v1.1.0)](https://github.com/0053-debug/BPHC-it-helpdesk/releases/download/v1.1.0/I-ITSM-win-x64-1.1.0.exe)
 
 3. **Android Mobile App (`.apk`)**:
    - Hybrid mobile container generated using **Capacitor**.
    - Touch-optimized views, pull-to-refresh incident feeds, and mobile status updates.
+   - [Download Android APK (v1.1.0)](https://github.com/0053-debug/BPHC-it-helpdesk/releases/download/v1.1.0/I-ITSM-android-debug-1.1.0.apk)
 
 *(Note: In accordance with course constraints, macOS and iOS platforms are intentionally excluded.)*
 
