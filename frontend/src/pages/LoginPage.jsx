@@ -8,6 +8,18 @@ export default function LoginPage({ onAuthenticated, onRegister, onForgotPasswor
   const [error, setError] = useState('');
   const [errorType, setErrorType] = useState(null); // 'not_found' | 'invalid_password' | 'timeout' | 'auth_failed' | 'generic'
   const [loading, setLoading] = useState(false);
+  const [secondsWaiting, setSecondsWaiting] = useState(0);
+
+  useEffect(() => {
+    let timer;
+    if (loading) {
+      setSecondsWaiting(0);
+      timer = setInterval(() => setSecondsWaiting((s) => s + 1), 1000);
+    } else {
+      setSecondsWaiting(0);
+    }
+    return () => clearInterval(timer);
+  }, [loading]);
 
   useEffect(() => {
     if (initialEmail) {
@@ -170,8 +182,10 @@ export default function LoginPage({ onAuthenticated, onRegister, onForgotPasswor
           )}
 
           {loading && (
-            <p className="priority-note" style={{ margin: 0, textAlign: 'center' }}>
-              Connecting to cloud server… (If waking from sleep, may take ~20s)
+            <p className="priority-note" style={{ margin: 0, textAlign: 'center', fontSize: '13px' }}>
+              {secondsWaiting < 4
+                ? 'Connecting to cloud server…'
+                : `Waking cloud container from sleep (${secondsWaiting}s elapsed, please wait)…`}
             </p>
           )}
 

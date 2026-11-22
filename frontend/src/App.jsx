@@ -95,6 +95,16 @@ export default function App() {
   const isAdmin = currentUser?.role === 'ROLE_ADMIN';
   const isEmployee = currentUser?.role === 'ROLE_EMPLOYEE';
 
+  // Proactive keep-alive: pings the cloud server on load and every 4 minutes to prevent Render free-tier cold sleep
+  useEffect(() => {
+    const pingCloudBackend = () => {
+      fetch('https://bphc-it-helpdesk-api.onrender.com/api/services', { method: 'HEAD', mode: 'no-cors' }).catch(() => {});
+    };
+    pingCloudBackend();
+    const interval = setInterval(pingCloudBackend, 4 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (!isConsoleMode || activeTab === 'landing') return;
     const url = new URL(window.location.href);

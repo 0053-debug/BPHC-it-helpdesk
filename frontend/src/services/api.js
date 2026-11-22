@@ -12,7 +12,7 @@ function resolveBaseUrl() {
 
 const api = axios.create({
   baseURL: resolveBaseUrl(),
-  timeout: 45000,
+  timeout: 75000,
   headers: {
     'Content-Type': 'application/json',
   },
