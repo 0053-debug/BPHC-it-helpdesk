@@ -15,38 +15,6 @@ The **Intelligent IT Service Management System (I-ITSM)** is an enterprise-grade
 
 Visit the website: https://bphc-it-helpdesk.web.app/ (For downloading the apps/using the web browser version)
 
-## Run the backend on your computer (Windows)
-
-The backend needs Java 17 or newer and a running PostgreSQL server. You do not
-need to install Maven; the repository includes the Maven wrapper.
-
-1. In PostgreSQL, create a database named `iitsm_db`.
-2. From the project folder, make a local environment file if you do not already
-   have one:
-
-   ```powershell
-   if (-not (Test-Path .env)) { Copy-Item backend/.env.example .env }
-   ```
-
-   Open `.env` and set your local PostgreSQL username and password, plus a
-   private random `JWT_SECRET`. Keep this file on your computer; do not commit
-   or share it.
-3. Open PowerShell in the project folder and start the API:
-
-   ```powershell
-   .\scripts\run-backend.ps1
-   ```
-
-   The API runs at `http://localhost:8080`. Leave this window open while using
-   the application. Press `Ctrl+C` to stop it.
-4. Check that it is running by opening
-   [http://localhost:8080/api/health](http://localhost:8080/api/health).
-
-To run the web app against this local backend, open a second terminal, go to
-`frontend`, run `npm ci` and `npm run dev`, then visit
-`http://localhost:5173`. The development server sends API requests to the
-backend on port 8080.
-
 Modern campus and corporate IT environments face challenges with unorganized incident reporting, delayed technician dispatch, missed SLA commitments, cascading service outages, and uncoordinated resolutions. I-ITSM Dashboard addresses these challenges by delivering an end-to-end incident lifecycle management platform powered by clean Object-Oriented Design (OOD) patterns, automated SLA tracking, workload-balanced assignment strategies, Directed Acyclic Graph (DAG) service impact modeling, and an immutable PostgreSQL audit ledger.
 
 The solution is distributed natively across **Windows Desktop (64-bit installer)**, **Android Mobile (APK)**, and a **Cloud Web Console**.
@@ -124,7 +92,7 @@ I-ITSM is built to run across client environments with a single shared design sy
 
 ## Cloud Architecture & Production Deployment
 
-- **Backend API**: Containerized Spring Boot service deployed on **Snapdeploy** with zero-auth `/health` and `/api/health` probes for automated orchestrator container lifecycle management.
+- **Backend API**: Containerized Spring Boot service deployed on **Snapdeploy** and **Render** with zero-auth `/health` and `/api/health` probes for automated orchestrator container lifecycle management.
 - **Database**: Managed Serverless PostgreSQL provided by **Neon**, featuring a database-level trigger on the audit table that blocks `UPDATE` and `DELETE` operations to guarantee a 100% immutable audit log.
 - **Frontend Hosting**: Globally distributed static assets and client routing served by **Firebase Hosting**.
 
