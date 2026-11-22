@@ -15,13 +15,26 @@ public class IncidentLifecycle {
             IncidentStatus.ACKNOWLEDGED, IncidentStatus.IN_PROGRESS,
             IncidentStatus.IN_PROGRESS, IncidentStatus.RESOLVED,
             IncidentStatus.RESOLVED, IncidentStatus.VERIFIED,
-            IncidentStatus.VERIFIED, IncidentStatus.CLOSED);
+            IncidentStatus.VERIFIED, IncidentStatus.CLOSED
+    );
 
     public void transition(String current, String target) {
         IncidentStatus from;
         IncidentStatus to;
-        try { from = IncidentStatus.valueOf(current); to = IncidentStatus.valueOf(target); }
-        catch (RuntimeException invalid) { throw new InvalidStateTransitionException(current, target); }
-        if (NEXT.get(from) != to) throw new InvalidStateTransitionException(current, target);
+
+        try {
+            from = IncidentStatus.valueOf(current);
+            to = IncidentStatus.valueOf(target);
+        } catch (RuntimeException invalid) {
+            throw new InvalidStateTransitionException(current, target);
+        }
+
+        boolean validCancellation =
+                from == IncidentStatus.CLASSIFIED &&
+                        to == IncidentStatus.CANCELLED;
+
+        if (!validCancellation && NEXT.get(from) != to) {
+            throw new InvalidStateTransitionException(current, target);
+        }
     }
 }

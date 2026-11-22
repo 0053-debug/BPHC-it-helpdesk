@@ -23,6 +23,7 @@ public class ServiceResponseDTO {
     private BigDecimal criticalityFactor;
     private Integer baseSlaWeight;
     private ServiceStatus status;
+    private ServiceStatus configuredStatus;
     private Integer baselineMttrMinutes;
     private Set<Long> dependencyIds;
     private Set<String> dependencyNames;

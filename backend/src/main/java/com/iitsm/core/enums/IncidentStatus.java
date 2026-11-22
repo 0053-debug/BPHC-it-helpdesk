@@ -8,5 +8,6 @@ public enum IncidentStatus {
     IN_PROGRESS,
     RESOLVED,
     VERIFIED,
-    CLOSED
+    CLOSED,
+    CANCELLED
 }

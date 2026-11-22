@@ -1,5 +1,8 @@
 package com.iitsm.servicecatalog.service;
 
+import com.iitsm.servicecatalog.model.ServiceStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+
 import com.iitsm.core.exception.IitsmException;
 import com.iitsm.core.exception.ResourceNotFoundException;
 import com.iitsm.servicecatalog.dto.ServiceCreateRequest;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 public class ServiceCatalogService {
 
     private final ServiceCatalogRepository serviceCatalogRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Transactional(readOnly = true)
     public List<ServiceResponseDTO> getAllServices() {
@@ -99,13 +103,44 @@ public class ServiceCatalogService {
         List<ServiceEntity> allServices = serviceCatalogRepository.findAllWithDependencies();
 
         List<ServiceDependencyGraphDTO.Node> nodes = allServices.stream()
-                .map(s -> ServiceDependencyGraphDTO.Node.builder()
-                        .id(s.getId())
-                        .name(s.getName())
-                        .code(s.getCode())
-                        .status(s.getStatus())
-                        .criticality(s.getCriticalityFactor())
-                        .build())
+                .map(s -> {
+                    Long active = jdbcTemplate.queryForObject(
+                            "SELECT COUNT(*) FROM incidents " +
+                                    "WHERE service_id = ? " +
+                                    "AND status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED', 'CANCELLED')",
+                            Long.class,
+                            s.getId()
+                    );
+
+                    Long critical = jdbcTemplate.queryForObject(
+                            "SELECT COUNT(*) FROM incidents " +
+                                    "WHERE service_id = ? " +
+                                    "AND priority = 'P1_CRITICAL' " +
+                                    "AND status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED', 'CANCELLED')",
+                            Long.class,
+                            s.getId()
+                    );
+
+                    ServiceStatus dynamicStatus;
+
+                    if (s.getStatus() == ServiceStatus.MAINTENANCE) {
+                        dynamicStatus = ServiceStatus.MAINTENANCE;
+                    } else if (critical != null && critical > 0) {
+                        dynamicStatus = ServiceStatus.OUTAGE;
+                    } else if (active != null && active > 0) {
+                        dynamicStatus = ServiceStatus.DEGRADED;
+                    } else {
+                        dynamicStatus = ServiceStatus.OPERATIONAL;
+                    }
+
+                    return ServiceDependencyGraphDTO.Node.builder()
+                            .id(s.getId())
+                            .name(s.getName())
+                            .code(s.getCode())
+                            .status(dynamicStatus)
+                            .criticality(s.getCriticalityFactor())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         List<ServiceDependencyGraphDTO.Edge> edges = new ArrayList<>();
@@ -148,6 +183,39 @@ public class ServiceCatalogService {
         }
     }
 
+    private ServiceStatus getDynamicStatus(ServiceEntity service) {
+        Long active = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM incidents " +
+                        "WHERE service_id = ? " +
+                        "AND status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED', 'CANCELLED')",
+                Long.class,
+                service.getId()
+        );
+
+        Long critical = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM incidents " +
+                        "WHERE service_id = ? " +
+                        "AND priority = 'P1_CRITICAL' " +
+                        "AND status NOT IN ('RESOLVED', 'VERIFIED', 'CLOSED', 'CANCELLED')",
+                Long.class,
+                service.getId()
+        );
+
+        if (service.getStatus() == ServiceStatus.MAINTENANCE) {
+            return ServiceStatus.MAINTENANCE;
+        }
+
+        if (critical != null && critical > 0) {
+            return ServiceStatus.OUTAGE;
+        }
+
+        if (active != null && active > 0) {
+            return ServiceStatus.DEGRADED;
+        }
+
+        return ServiceStatus.OPERATIONAL;
+    }
+
     public ServiceResponseDTO toDTO(ServiceEntity entity) {
         Set<Long> depIds = entity.getDependencies() != null
                 ? entity.getDependencies().stream().map(ServiceEntity::getId).collect(Collectors.toSet())
@@ -163,7 +231,8 @@ public class ServiceCatalogService {
                 .description(entity.getDescription())
                 .criticalityFactor(entity.getCriticalityFactor())
                 .baseSlaWeight(entity.getBaseSlaWeight())
-                .status(entity.getStatus())
+                .status(getDynamicStatus(entity))
+                .configuredStatus(entity.getStatus())
                 .baselineMttrMinutes(entity.getBaselineMttrMinutes())
                 .dependencyIds(depIds)
                 .dependencyNames(depNames)

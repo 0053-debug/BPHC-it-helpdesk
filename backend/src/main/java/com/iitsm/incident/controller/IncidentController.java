@@ -50,6 +50,10 @@ public class IncidentController {
     public IncidentCommentResponse comment(@PathVariable Long id, @Valid @RequestBody IncidentCommentRequest request, Authentication auth) { return incidents.addComment(id, request.message(), auth.getName()); }
     @PostMapping("/{id}/verify") public IncidentResponse verify(@PathVariable Long id, Authentication auth) { return incidents.verify(id, auth.getName()); }
     @PostMapping("/{id}/close") public IncidentResponse close(@PathVariable Long id, Authentication auth) { return incidents.close(id, auth.getName()); }
+    @PostMapping("/{id}/cancel")
+    public IncidentResponse cancel(@PathVariable Long id, Authentication auth) {
+        return incidents.cancel(id, auth.getName());
+    }
     @PostMapping("/{id}/acknowledge") public IncidentResponse acknowledge(@PathVariable Long id, Authentication auth) { return incidents.acknowledge(id, auth.getName()); }
     @PostMapping("/{id}/investigate") public IncidentResponse investigate(@PathVariable Long id, Authentication auth) { return incidents.investigate(id, auth.getName()); }
     @PostMapping("/{id}/resolve") public IncidentResponse resolve(@PathVariable Long id, @Valid @RequestBody IncidentResolutionRequest request, Authentication auth) { return incidents.resolve(id, request.resolutionNotes(), request.rootCause(), auth.getName()); }
