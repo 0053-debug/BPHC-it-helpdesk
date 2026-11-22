@@ -42,6 +42,9 @@ public class User {
     @Column(name = "fcm_token")
     private String fcmToken;
 
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
     @Builder.Default
     @Column(name = "created_at", updatable = false)
     private Instant createdAt = Instant.now();

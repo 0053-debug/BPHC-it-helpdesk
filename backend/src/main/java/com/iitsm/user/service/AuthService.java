@@ -55,6 +55,10 @@ public class AuthService {
             throw new InvalidCredentialsException("Incorrect password for '" + email + "'. Please check your password or use 'Forgot password'.");
         }
         User user = userService.requireByEmail(email);
+        if (request.phoneNumber() != null && !request.phoneNumber().isBlank()) {
+            userService.updatePhoneNumber(email, request.phoneNumber().trim());
+            user = userService.requireByEmail(email);
+        }
         return new AuthResponse(tokenProvider.issueToken(user), "Bearer", UserResponse.from(user));
     }
 }

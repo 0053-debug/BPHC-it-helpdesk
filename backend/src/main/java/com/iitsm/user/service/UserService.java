@@ -48,6 +48,7 @@ public class UserService {
                 .fullName(request.fullName().trim())
                 .email(email)
                 .passwordHash(passwordEncoder.encode(request.password()))
+                .phoneNumber(request.phoneNumber() != null ? request.phoneNumber().trim() : null)
                 .role(UserRole.ROLE_EMPLOYEE)
                 .build();
 
@@ -56,6 +57,13 @@ public class UserService {
         } catch (DataIntegrityViolationException exception) {
             throw new IitsmException("Email is already registered", exception);
         }
+    }
+
+    @Transactional
+    public void updatePhoneNumber(String email, String phoneNumber) {
+        User user = requireByEmail(email);
+        user.setPhoneNumber(phoneNumber != null ? phoneNumber.trim() : null);
+        userRepository.save(user);
     }
 
     public User requireByEmail(String email) {

@@ -67,8 +67,11 @@ CREATE TABLE IF NOT EXISTS users (
     status VARCHAR(50) DEFAULT 'AVAILABLE', -- AVAILABLE, ON_LEAVE, OFF_DUTY
     department VARCHAR(100),
     fcm_token VARCHAR(255),
+    phone_number VARCHAR(50),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50);
 
 -- 5. Shared SLA Policy Entity
 CREATE TABLE IF NOT EXISTS sla_policies (

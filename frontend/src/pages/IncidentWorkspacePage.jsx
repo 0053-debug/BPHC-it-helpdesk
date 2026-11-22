@@ -2,6 +2,13 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import TicketChatWidget from '../components/TicketChatWidget';
 import { sendTicketCreatedEmail, sendTicketProgressEmail, sendTicketResolvedEmail, sendSlaBreachEmail } from '../services/emailService';
+import {
+  sendTicketCreatedWhatsApp,
+  sendTicketProgressWhatsApp,
+  sendTicketResolvedWhatsApp,
+  sendSlaBreachWhatsApp,
+  DEFAULT_PHONE,
+} from '../services/whatsappService';
 
 
 const categories = ['HARDWARE', 'SOFTWARE', 'NETWORK', 'DATABASE', 'CLOUD', 'SECURITY', 'AUTHENTICATION', 'APPLICATION', 'STORAGE'];
@@ -53,6 +60,7 @@ export default function IncidentWorkspacePage({ currentUser }) {
       const { data } = await api.post('/incidents', { ...form, serviceId: Number(form.serviceId) });
       setForm((old) => ({ ...old, title: '', description: '' })); await refresh(); await openIncident(data);
       const userEmail = currentUser?.email || (JSON.parse(localStorage.getItem('iitsm_user') || '{}')).email;
+      const userPhone = currentUser?.phoneNumber || localStorage.getItem('iitsm_phone') || DEFAULT_PHONE;
       if (userEmail) {
         sendTicketCreatedEmail({
           toEmail: userEmail,
@@ -63,6 +71,14 @@ export default function IncidentWorkspacePage({ currentUser }) {
           assignedTo: data.technicianName || 'Automatic Assignment Pool',
         }).catch((err) => console.warn('Could not dispatch ticket confirmation email:', err));
       }
+      sendTicketCreatedWhatsApp({
+        toPhone: userPhone,
+        userName: currentUser?.fullName || currentUser?.username || 'User',
+        ticketId: data.trackingNumber || data.id,
+        title: data.title,
+        priority: data.priority,
+        assignedTo: data.technicianName || 'Automatic Assignment Pool',
+      }).catch((err) => console.warn('Could not dispatch ticket confirmation WhatsApp:', err));
     } catch (e) { setError(e.response?.data?.message || 'Could not submit incident.'); }
     finally { setLoading(false); }
   };
@@ -79,6 +95,7 @@ export default function IncidentWorkspacePage({ currentUser }) {
       await refresh();
       try { const { data: trail } = await api.get(`/incidents/${selected.id}/audit-trail`); setAuditTrail(trail); } catch (e) {}
       const userEmail = currentUser?.email || (JSON.parse(localStorage.getItem('iitsm_user') || '{}')).email;
+      const userPhone = currentUser?.phoneNumber || localStorage.getItem('iitsm_phone') || DEFAULT_PHONE;
       if (userEmail) {
         sendTicketProgressEmail({
           toEmail: userEmail,
@@ -91,6 +108,16 @@ export default function IncidentWorkspacePage({ currentUser }) {
           technicianName: data.technicianName || 'Specialist',
         }).catch((err) => console.warn('Progress email dispatch failed:', err));
       }
+      sendTicketProgressWhatsApp({
+        toPhone: userPhone,
+        userName: currentUser?.fullName || 'User',
+        ticketId: data.trackingNumber || data.id,
+        title: data.title,
+        previousStatus: prevStatus,
+        currentStatus: data.status,
+        statusNote: `Ticket transitioned via ${action}`,
+        technicianName: data.technicianName || 'Specialist',
+      }).catch((err) => console.warn('Progress WhatsApp dispatch failed:', err));
     } catch (e) { setError(e.response?.data?.message || `Could not ${action} incident.`); }
   };
   const employee = currentUser?.role === 'ROLE_EMPLOYEE';
@@ -102,6 +129,7 @@ export default function IncidentWorkspacePage({ currentUser }) {
       setSelected(data);
       await refresh();
       const userEmail = currentUser?.email || (JSON.parse(localStorage.getItem('iitsm_user') || '{}')).email;
+      const userPhone = currentUser?.phoneNumber || localStorage.getItem('iitsm_phone') || DEFAULT_PHONE;
       if (userEmail) {
         sendTicketResolvedEmail({
           toEmail: userEmail,
@@ -113,6 +141,14 @@ export default function IncidentWorkspacePage({ currentUser }) {
           technicianName: data.technicianName || 'Specialist',
         }).catch((err) => console.warn('Resolved email dispatch failed:', err));
       }
+      sendTicketResolvedWhatsApp({
+        toPhone: userPhone,
+        userName: currentUser?.fullName || 'User',
+        ticketId: data.trackingNumber || data.id,
+        title: data.title,
+        resolutionNotes,
+        rootCause,
+      }).catch((err) => console.warn('Resolved WhatsApp dispatch failed:', err));
     } catch (e) { setError(e.response?.data?.message || 'Could not resolve incident.'); }
   };
 
@@ -163,6 +199,7 @@ export default function IncidentWorkspacePage({ currentUser }) {
                 style={{ background: '#ef4444', color: '#ffffff', padding: '6px 14px', fontSize: '12px', fontWeight: 600, border: 'none' }}
                 onClick={() => {
                   const userEmail = currentUser?.email || (JSON.parse(localStorage.getItem('iitsm_user') || '{}')).email || 'raghuramvedantam16@gmail.com';
+                  const userPhone = currentUser?.phoneNumber || localStorage.getItem('iitsm_phone') || DEFAULT_PHONE;
                   sendSlaBreachEmail({
                     toEmail: userEmail,
                     userName: currentUser?.fullName || 'IT Lead',
@@ -173,7 +210,15 @@ export default function IncidentWorkspacePage({ currentUser }) {
                     escalationStatus: 'TIER-2 ESCALATION',
                     slaType: 'Resolution',
                   });
-                  alert(`SLA Breach Email using templates/sla-breach.html dispatched to ${userEmail}!`);
+                  sendSlaBreachWhatsApp({
+                    toPhone: userPhone,
+                    userName: currentUser?.fullName || 'IT Lead',
+                    ticketId: selected.trackingNumber || selected.id,
+                    title: selected.title,
+                    priority: selected.priority,
+                    deadline: selected.responseDeadline ? new Date(selected.responseDeadline).toLocaleString() : 'Exceeded',
+                  }).catch((err) => console.warn('Could not dispatch SLA WhatsApp alert:', err));
+                  alert(`SLA Breach Notice dispatched via Email & WhatsApp to ${userPhone}!`);
                 }}
               >
                 ✉ Dispatch SLA Breach Email

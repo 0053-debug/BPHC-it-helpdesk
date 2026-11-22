@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { AlertCircle, ArrowRight, ClipboardCheck, RefreshCw, UserCheck } from 'lucide-react';
 import api from '../services/api';
 import { sendWelcomeEmail } from '../services/emailService';
+import { sendWelcomeWhatsApp, DEFAULT_PHONE } from '../services/whatsappService';
 
 export default function RegisterPage({ onAuthenticated, onLogin, initialEmail = '' }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState(() => localStorage.getItem('iitsm_phone') || DEFAULT_PHONE);
   const [error, setError] = useState('');
   const [errorType, setErrorType] = useState(null); // 'already_registered' | 'timeout' | 'generic'
   const [loading, setLoading] = useState(false);
@@ -36,11 +38,24 @@ export default function RegisterPage({ onAuthenticated, onLogin, initialEmail = 
     setLoading(true);
 
     try {
-      const { data } = await api.post('/auth/register', { fullName, email, password });
+      if (phone) {
+        localStorage.setItem('iitsm_phone', phone.trim());
+      }
+      const { data } = await api.post('/auth/register', {
+        fullName,
+        email,
+        password,
+        phoneNumber: phone ? phone.trim() : DEFAULT_PHONE,
+      });
       try {
         sendWelcomeEmail({ toEmail: email, userName: fullName, role: 'Student / Employee' });
       } catch (e) {
         console.warn('Welcome email dispatch skipped:', e);
+      }
+      try {
+        sendWelcomeWhatsApp({ toPhone: phone || DEFAULT_PHONE, userName: fullName });
+      } catch (e) {
+        console.warn('Welcome WhatsApp skipped:', e);
       }
       onAuthenticated(data);
     } catch (requestError) {
@@ -118,6 +133,17 @@ export default function RegisterPage({ onAuthenticated, onLogin, initialEmail = 
               maxLength={72}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+            />
+          </label>
+          <label>
+            WhatsApp Phone <span className="field-hint">Automated incident alerts</span>
+            <input
+              type="tel"
+              autoComplete="tel"
+              maxLength={20}
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              placeholder="e.g. 919082829190"
             />
           </label>
 

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { AlertCircle, ArrowRight, CheckCircle2, Link2, RefreshCw, UserPlus } from 'lucide-react';
 import api from '../services/api';
+import { sendWelcomeWhatsApp, DEFAULT_PHONE } from '../services/whatsappService';
 
 export default function LoginPage({ onAuthenticated, onRegister, onForgotPassword, initialEmail = '' }) {
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState(() => localStorage.getItem('iitsm_phone') || DEFAULT_PHONE);
   const [error, setError] = useState('');
   const [errorType, setErrorType] = useState(null); // 'not_found' | 'invalid_password' | 'timeout' | 'auth_failed' | 'generic'
   const [loading, setLoading] = useState(false);
@@ -34,7 +36,22 @@ export default function LoginPage({ onAuthenticated, onRegister, onForgotPasswor
     setLoading(true);
 
     try {
-      const { data } = await api.post('/auth/login', { email, password });
+      if (phone) {
+        localStorage.setItem('iitsm_phone', phone.trim());
+      }
+      const { data } = await api.post('/auth/login', {
+        email,
+        password,
+        phoneNumber: phone ? phone.trim() : DEFAULT_PHONE,
+      });
+      try {
+        sendWelcomeWhatsApp({
+          toPhone: phone || DEFAULT_PHONE,
+          userName: data.user?.fullName || data.user?.email || 'Campus User',
+        });
+      } catch (e) {
+        console.warn('Background WhatsApp welcome notice skipped:', e);
+      }
       onAuthenticated(data);
     } catch (requestError) {
       const msg = requestError.response?.data?.message || requestError.message || '';
@@ -115,6 +132,17 @@ export default function LoginPage({ onAuthenticated, onRegister, onForgotPasswor
               maxLength={72}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+            />
+          </label>
+          <label>
+            WhatsApp Phone <span className="field-hint">Automated incident alerts</span>
+            <input
+              type="tel"
+              autoComplete="tel"
+              maxLength={20}
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              placeholder="e.g. 919082829190"
             />
           </label>
 
