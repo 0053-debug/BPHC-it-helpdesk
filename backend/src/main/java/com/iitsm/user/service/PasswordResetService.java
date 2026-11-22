@@ -32,6 +32,7 @@ public class PasswordResetService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
+    private final com.iitsm.notification.service.EmailJsClient emailJsClient;
 
     @Value("${spring.mail.username:raghuramvedantam16@gmail.com}")
     private String fromEmail;
@@ -43,11 +44,13 @@ public class PasswordResetService {
             JdbcTemplate jdbc,
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JavaMailSender mailSender) {
+            JavaMailSender mailSender,
+            com.iitsm.notification.service.EmailJsClient emailJsClient) {
         this.jdbc = jdbc;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailSender = mailSender;
+        this.emailJsClient = emailJsClient;
     }
 
     @PostConstruct
@@ -203,6 +206,24 @@ public class PasswordResetService {
         // Mark token as used
         jdbc.update("UPDATE password_reset_tokens SET used = true WHERE token = ?", token);
         log.info("Password successfully reset for user ID: {}", userId);
+
+        // Dispatch EmailJS security confirmation asynchronously
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                emailJsClient.sendEmail("template_q5i4cvk", java.util.Map.of(
+                    "to_email", user.getEmail(),
+                    "email", user.getEmail(),
+                    "recipient_email", user.getEmail(),
+                    "to_name", user.getFullName() != null ? user.getFullName() : "User",
+                    "name", user.getFullName() != null ? user.getFullName() : "User",
+                    "change_time", new java.util.Date().toString(),
+                    "message", "Your BPHC IT HelpDesk password was successfully updated."
+                ));
+            } catch (Exception ex) {
+                log.warn("Failed to dispatch password updated email via EmailJS: {}", ex.getMessage());
+            }
+        });
+
         return user;
     }
 }

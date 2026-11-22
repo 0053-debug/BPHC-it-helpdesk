@@ -49,10 +49,11 @@ export default function IncidentWorkspacePage({ currentUser }) {
     try {
       const { data } = await api.post('/incidents', { ...form, serviceId: Number(form.serviceId) });
       setForm((old) => ({ ...old, title: '', description: '' })); await refresh(); await openIncident(data);
-      if (currentUser?.email) {
+      const userEmail = currentUser?.email || (JSON.parse(localStorage.getItem('iitsm_user') || '{}')).email;
+      if (userEmail) {
         sendTicketCreatedEmail({
-          toEmail: currentUser.email,
-          userName: currentUser.fullName || currentUser.username || 'User',
+          toEmail: userEmail,
+          userName: currentUser?.fullName || currentUser?.username || 'User',
           ticketId: data.trackingNumber || data.id,
           title: data.title,
           priority: data.priority,

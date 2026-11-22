@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 public class EmailNotificationObserver implements IncidentObserver {
 
     private final JavaMailSender mailSender;
+    private final EmailJsClient emailJsClient;
 
     @Value("${spring.mail.username:raghuramvedantam16@gmail.com}")
     private String fromEmail;
@@ -58,9 +59,30 @@ public class EmailNotificationObserver implements IncidentObserver {
             mailSender.send(mimeMessage);
             log.info("HTML email successfully dispatched to {} via SMTP", event.getRecipientEmail());
         } catch (Exception ex) {
-            // Graceful degradation rule from AGENTS.md: Mail downtime must not fail the primary transaction
-            log.warn("SMTP email dispatch failed for recipient {}: {}. Continuing without transaction rollback.",
+            // Render blocks outbound SMTP ports 25/465/587 on free tier: fall back to EmailJS REST API over HTTPS
+            log.warn("SMTP email dispatch failed for recipient {}: {}. Falling back to EmailJS HTTPS dispatch...",
                     event.getRecipientEmail(), ex.getMessage());
+            try {
+                String tracking = event.getTrackingNumber() != null ? event.getTrackingNumber() : ("INC-" + event.getIncidentId());
+                String title = event.getTitle() != null ? event.getTitle() : "Campus IT Incident";
+                java.util.Map<String, String> params = new java.util.LinkedHashMap<>();
+                params.put("to_email", event.getRecipientEmail());
+                params.put("email", event.getRecipientEmail());
+                params.put("recipient_email", event.getRecipientEmail());
+                params.put("to_name", event.getRecipientEmail());
+                params.put("name", event.getRecipientEmail());
+                params.put("ticket_id", tracking);
+                params.put("id", tracking);
+                params.put("ticket_title", title);
+                params.put("title", title);
+                params.put("ticket_priority", "NORMAL");
+                params.put("priority", "NORMAL");
+                params.put("assigned_technician", "Specialist Dispatched");
+                params.put("ticket_url", "https://bphc-it-helpdesk.web.app/?app=console&tab=incidents");
+                emailJsClient.sendEmail("template_y8gkreo", params);
+            } catch (Exception ejsEx) {
+                log.warn("EmailJS HTTPS fallback also failed: {}", ejsEx.getMessage());
+            }
         }
     }
 
