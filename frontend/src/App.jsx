@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import {
   Activity,
   ClipboardList,
@@ -55,6 +56,11 @@ function isTabAvailable(user, tab) {
 
 export function isNativeApp() {
   if (typeof window === 'undefined') return false;
+  try {
+    if (Capacitor && typeof Capacitor.isNativePlatform === 'function' && Capacitor.isNativePlatform()) {
+      return true;
+    }
+  } catch {}
   const protocol = window.location.protocol;
   const ua = window.navigator.userAgent || '';
   const origin = window.location.origin || '';

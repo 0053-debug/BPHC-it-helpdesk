@@ -17,9 +17,6 @@ jobs:
           - os: windows-latest
             platform: win
             installer: I-ITSM-win-x64-1.1.0.exe
-          - os: macos-latest
-            platform: mac
-            installer: I-ITSM-mac-universal-1.1.0.dmg
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -36,7 +33,6 @@ jobs:
         run: |
           npm run build
           if [ "${{ matrix.platform }}" = "win" ]; then npx electron-builder --win nsis --x64 --publish never; fi
-          if [ "${{ matrix.platform }}" = "mac" ]; then npx electron-builder --mac dmg --universal --publish never; fi
         shell: bash
         env:
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://bphc-it-helpdesk-api.onrender.com/api' }}
@@ -90,7 +86,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     needs: [desktop, android]
     runs-on: ubuntu-latest
     steps:
@@ -100,5 +96,6 @@ jobs:
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          tag_name: v1.1.0
+          generate_release_notes: false
           files: release-assets/**
