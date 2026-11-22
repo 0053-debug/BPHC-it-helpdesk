@@ -139,6 +139,12 @@ public class IncidentService {
     @Transactional(readOnly = true)
     public List<IncidentResponse> search(String email, String id, LocalDate dateFrom, LocalDate dateTo,
             String status, String priority, Long serviceId, Long technicianId, String slaStatus) {
+        return search(email, id, dateFrom, dateTo, status, priority, null, serviceId, technicianId, slaStatus);
+    }
+
+    @Transactional(readOnly = true)
+    public List<IncidentResponse> search(String email, String id, LocalDate dateFrom, LocalDate dateTo,
+            String status, String priority, String category, Long serviceId, Long technicianId, String slaStatus) {
         if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo))
             throw new IitsmException("Start date must be on or before end date");
         User actor = requireUser(email);
@@ -157,6 +163,7 @@ public class IncidentService {
         if (dateTo != null) { sql.append(" AND i.created_at < :toDate"); params.addValue("toDate", Timestamp.from(dateTo.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))); }
         if (status != null && !status.isBlank()) { sql.append(" AND i.status = :status"); params.addValue("status", status); }
         if (priority != null && !priority.isBlank()) { sql.append(" AND i.priority = :priority"); params.addValue("priority", priority); }
+        if (category != null && !category.isBlank()) { sql.append(" AND i.category = :category"); params.addValue("category", category.trim()); }
         if (serviceId != null) { sql.append(" AND i.service_id = :serviceId"); params.addValue("serviceId", serviceId); }
         if (technicianId != null) { sql.append(" AND i.assigned_technician_id = :technicianId"); params.addValue("technicianId", technicianId); }
         if (slaStatus != null && !slaStatus.isBlank()) {

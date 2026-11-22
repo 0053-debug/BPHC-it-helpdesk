@@ -13,11 +13,12 @@ export default function IncidentWorkspacePage({ currentUser }) {
   const [services, setServices] = useState([]);
   const [selected, setSelected] = useState(null);
   const [comments, setComments] = useState([]);
+  const [auditTrail, setAuditTrail] = useState([]);
   const [message, setMessage] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [rootCause, setRootCause] = useState('');
   const [form, setForm] = useState({ title: '', description: '', serviceId: '', category: 'SOFTWARE', urgency: 'MEDIUM', impact: 'INDIVIDUAL' });
-  const [filters, setFilters] = useState({ id: '', dateFrom: '', dateTo: '', status: '', priority: '', serviceId: '', technicianId: '', slaStatus: '' });
+  const [filters, setFilters] = useState({ id: '', dateFrom: '', dateTo: '', status: '', priority: '', category: '', serviceId: '', technicianId: '', slaStatus: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -43,6 +44,8 @@ export default function IncidentWorkspacePage({ currentUser }) {
     setSelected(incident);
     try { const { data } = await api.get(`/incidents/${incident.id}/comments`); setComments(data); }
     catch (e) { setError(e.response?.data?.message || 'Could not load incident updates.'); }
+    try { const { data: trail } = await api.get(`/incidents/${incident.id}/audit-trail`); setAuditTrail(trail); }
+    catch (e) { setAuditTrail([]); }
   };
   const submitIncident = async (event) => {
     event.preventDefault(); setError(''); setLoading(true);
@@ -74,6 +77,7 @@ export default function IncidentWorkspacePage({ currentUser }) {
       const { data } = await api.post(`/incidents/${selected.id}/${action}`);
       setSelected(data);
       await refresh();
+      try { const { data: trail } = await api.get(`/incidents/${selected.id}/audit-trail`); setAuditTrail(trail); } catch (e) {}
       const userEmail = currentUser?.email || (JSON.parse(localStorage.getItem('iitsm_user') || '{}')).email;
       if (userEmail) {
         sendTicketProgressEmail({
@@ -136,6 +140,7 @@ export default function IncidentWorkspacePage({ currentUser }) {
         <input aria-label="Created to" type="date" value={filters.dateTo} onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })} className="rounded border p-2" />
         <select aria-label="Status" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} className="rounded border p-2"><option value="">All statuses</option>{['NEW','CLASSIFIED','ASSIGNED','ACKNOWLEDGED','IN_PROGRESS','RESOLVED','VERIFIED','CLOSED'].map((v) => <option key={v}>{v}</option>)}</select>
         <select aria-label="Priority" value={filters.priority} onChange={(e) => setFilters({ ...filters, priority: e.target.value })} className="rounded border p-2"><option value="">All priorities</option>{['P1_CRITICAL','P2_HIGH','P3_MEDIUM','P4_LOW'].map((v) => <option key={v}>{v}</option>)}</select>
+        <select aria-label="Category" value={filters.category} onChange={(e) => setFilters({ ...filters, category: e.target.value })} className="rounded border p-2"><option value="">All categories</option>{categories.map((v) => <option key={v}>{v}</option>)}</select>
         <select aria-label="Service" value={filters.serviceId} onChange={(e) => setFilters({ ...filters, serviceId: e.target.value })} className="rounded border p-2"><option value="">All services</option>{services.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
         <select aria-label="SLA state" value={filters.slaStatus} onChange={(e) => setFilters({ ...filters, slaStatus: e.target.value })} className="rounded border p-2"><option value="">All SLA states</option>{['NORMAL','WARNING','BREACHED'].map((v) => <option key={v}>{v}</option>)}</select>
         {!employee && <input aria-label="Technician ID" type="number" min="1" placeholder="Technician ID" value={filters.technicianId} onChange={(e) => setFilters({ ...filters, technicianId: e.target.value })} className="rounded border p-2" />}
@@ -180,6 +185,33 @@ export default function IncidentWorkspacePage({ currentUser }) {
           {assignedTechnician && selected.status === 'IN_PROGRESS' && <form onSubmit={resolveIncident} className="work-section space-y-2"><h3 className="work-section__title">Resolution details</h3><textarea required value={resolutionNotes} onChange={(e) => setResolutionNotes(e.target.value)} placeholder="Explain how the issue was fixed..." className="w-full" /><textarea required value={rootCause} onChange={(e) => setRootCause(e.target.value)} placeholder="What caused the problem..." className="w-full" /><button className="primary-action">Mark resolved</button></form>}
           {employee && selected.status === 'RESOLVED' && <button onClick={() => transition('verify')} className="primary-action mt-4">Confirm the fix</button>}{employee && selected.status === 'VERIFIED' && <button onClick={() => transition('close')} className="secondary-action mt-4">Close ticket</button>}
           <section className="work-section" aria-labelledby="ticket-updates-title"><h3 id="ticket-updates-title" className="work-section__title">Updates and messages</h3><div className="mt-2 max-h-48 space-y-2 overflow-auto">{comments.map((c) => <div key={c.id} className="work-panel p-3 text-sm"><p>{c.message}</p><p className="mt-1 text-xs text-muted">{c.authorName} · {new Date(c.createdAt).toLocaleString()}</p></div>)}</div><form onSubmit={postUpdate} className="mt-3 flex gap-2"><input value={message} onChange={(e) => setMessage(e.target.value)} maxLength="4000" placeholder="Post an update or reply..." className="min-w-0 flex-1" /><button className="secondary-action">Send</button></form></section>
+          <section className="work-section mt-4" aria-labelledby="ticket-audit-title">
+            <div className="flex items-center justify-between">
+              <h3 id="ticket-audit-title" className="work-section__title">Incident Audit Trail</h3>
+              <span className="text-xs text-muted">{auditTrail.length} events logged</span>
+            </div>
+            <div className="mt-2 max-h-56 space-y-2 overflow-auto">
+              {auditTrail.map((entry) => (
+                <div key={entry.id || `${entry.action}-${entry.timestamp}`} className="work-panel p-2.5 text-xs flex flex-col gap-1 border-l-2 border-accent">
+                  <div className="flex items-center justify-between text-muted">
+                    <span className="font-semibold text-ink">
+                      {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} – {entry.action}
+                    </span>
+                    <span className="rounded bg-inset px-1.5 py-0.5 text-[11px]">{entry.actorName || 'SYSTEM'} ({entry.actorRole || 'SYSTEM'})</span>
+                  </div>
+                  {entry.previousState && entry.newState && (
+                    <div className="text-[11px] text-secondary">
+                      State transition: <span className="font-mono text-ink">{entry.previousState}</span> → <span className="font-mono text-accent font-semibold">{entry.newState}</span>
+                    </div>
+                  )}
+                  {entry.description && <p className="text-muted text-[11px] mt-0.5 whitespace-pre-wrap">{entry.description}</p>}
+                </div>
+              ))}
+              {auditTrail.length === 0 && (
+                <p className="text-xs text-muted p-3 text-center">No audit records recorded yet.</p>
+              )}
+            </div>
+          </section>
         </article>}
       </div>
     </section>

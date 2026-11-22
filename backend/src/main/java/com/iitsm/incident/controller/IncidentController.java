@@ -29,9 +29,10 @@ public class IncidentController {
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate dateTo,
             @RequestParam(required=false) String status, @RequestParam(required=false) String priority,
+            @RequestParam(required=false) String category,
             @RequestParam(required=false) Long serviceId, @RequestParam(required=false) Long technicianId,
             @RequestParam(required=false) String slaStatus) {
-        return incidents.search(authentication.getName(), id, dateFrom, dateTo, status, priority, serviceId, technicianId, slaStatus);
+        return incidents.search(authentication.getName(), id, dateFrom, dateTo, status, priority, category, serviceId, technicianId, slaStatus);
     }
 
     @PostMapping
