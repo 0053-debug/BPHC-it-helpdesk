@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import TicketChatWidget from '../components/TicketChatWidget';
-import { sendTicketCreatedEmail, sendTicketProgressEmail, sendTicketResolvedEmail } from '../services/emailService';
+import { sendTicketCreatedEmail, sendTicketProgressEmail, sendTicketResolvedEmail, sendSlaBreachEmail } from '../services/emailService';
 
 
 const categories = ['HARDWARE', 'SOFTWARE', 'NETWORK', 'DATABASE', 'CLOUD', 'SECURITY', 'AUTHENTICATION', 'APPLICATION', 'STORAGE'];
@@ -146,6 +146,35 @@ export default function IncidentWorkspacePage({ currentUser }) {
         </button>)}{incidents.length === 0 && <p className="rounded-control bg-panel p-5 text-muted">No tickets found matching these filters.</p>}</div>
         {selected && <article className="work-panel ticket-detail p-5"><div className="ticket-detail__heading"><div><h2 className="ticket-id mono">{selected.trackingNumber}</h2><p className="mt-1 font-medium">{selected.title}</p></div><span className="status-chip status-chip--instrument">{selected.status}</span></div><p className="mt-3 whitespace-pre-wrap text-sm text-secondary">{selected.description}</p><dl className="ticket-facts mt-4 text-sm"><dt>Status</dt><dd>{selected.status}</dd><dt>Priority</dt><dd>{selected.priority} (score {selected.priorityScore ?? '—'})</dd><dt>Service</dt><dd>{selected.serviceName}</dd><dt>Technician</dt><dd>{selected.technicianName || 'Awaiting assignment'}</dd><dt>Response due</dt><dd>{selected.responseDeadline ? new Date(selected.responseDeadline).toLocaleString() : '—'}</dd><dt>Resolution due</dt><dd>{selected.resolutionDeadline ? new Date(selected.resolutionDeadline).toLocaleString() : '—'}</dd><dt>Acknowledged</dt><dd>{selected.acknowledgedAt ? new Date(selected.acknowledgedAt).toLocaleString() : '—'}</dd><dt>Resolved</dt><dd>{selected.resolvedAt ? new Date(selected.resolvedAt).toLocaleString() : '—'}</dd><dt>Closed</dt><dd>{selected.closedAt ? new Date(selected.closedAt).toLocaleString() : '—'}</dd><dt>Resolution</dt><dd>{selected.resolutionNotes || 'Pending'}</dd><dt>Root cause</dt><dd>{selected.rootCause || 'Pending'}</dd></dl>
           <aside className="priority-note mt-4"><h3 className="font-semibold">How priority is calculated</h3><p className="mt-1">Impact {selected.impact} ({selected.impact === 'ORGANIZATION_WIDE' ? 4 : selected.impact === 'DEPARTMENT' ? 2 : 1}) × urgency {selected.urgency} ({({ LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 })[selected.urgency]}) × service criticality {selected.criticalityFactor ?? 1} + service weight {selected.serviceWeight ?? 0} = {selected.priorityScore ?? '—'}.</p><p className="mt-1 text-xs">Priority ranges: P1 ≥ 24, P2 ≥ 14, P3 ≥ 6, and P4 below 6.</p></aside>
+          {selected.slaBreached && (
+            <div style={{ marginTop: '14px', padding: '12px 16px', background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.35)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <strong style={{ color: '#ef4444', fontSize: '13px', display: 'block' }}>⚠️ SLA Target Breached on this Ticket</strong>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>An automated SLA escalation notice can be dispatched to operational leads.</span>
+              </div>
+              <button
+                type="button"
+                className="primary-action"
+                style={{ background: '#ef4444', color: '#ffffff', padding: '6px 14px', fontSize: '12px', fontWeight: 600, border: 'none' }}
+                onClick={() => {
+                  const userEmail = currentUser?.email || (JSON.parse(localStorage.getItem('iitsm_user') || '{}')).email || 'raghuramvedantam16@gmail.com';
+                  sendSlaBreachEmail({
+                    toEmail: userEmail,
+                    userName: currentUser?.fullName || 'IT Lead',
+                    ticketId: selected.trackingNumber || selected.id,
+                    title: selected.title,
+                    priority: selected.priority,
+                    deadline: selected.responseDeadline ? new Date(selected.responseDeadline).toLocaleString() : 'Exceeded',
+                    escalationStatus: 'TIER-2 ESCALATION',
+                    slaType: 'Resolution',
+                  });
+                  alert(`SLA Breach Email using templates/sla-breach.html dispatched to ${userEmail}!`);
+                }}
+              >
+                ✉ Dispatch SLA Breach Email
+              </button>
+            </div>
+          )}
           {assignedTechnician && selected.status === 'ASSIGNED' && <button onClick={() => transition('acknowledge')} className="primary-action mt-4 mr-2">Acknowledge ticket</button>}
           {assignedTechnician && selected.status === 'ACKNOWLEDGED' && <button onClick={() => transition('investigate')} className="primary-action mt-4">Start work</button>}
           {assignedTechnician && selected.status === 'IN_PROGRESS' && <form onSubmit={resolveIncident} className="work-section space-y-2"><h3 className="work-section__title">Resolution details</h3><textarea required value={resolutionNotes} onChange={(e) => setResolutionNotes(e.target.value)} placeholder="Explain how the issue was fixed..." className="w-full" /><textarea required value={rootCause} onChange={(e) => setRootCause(e.target.value)} placeholder="What caused the problem..." className="w-full" /><button className="primary-action">Mark resolved</button></form>}
