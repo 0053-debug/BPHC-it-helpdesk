@@ -4,11 +4,12 @@ const config: CapacitorConfig = {
   appId: 'edu.bphc.iitsm',
   appName: 'I-ITSM',
   webDir: 'dist',
-  ios: {
-    contentInset: 'automatic',
+  server: {
+    androidScheme: 'https',
+    cleartext: true,
   },
   android: {
-    allowMixedContent: false,
+    allowMixedContent: true,
   },
 };
 

@@ -8,7 +8,6 @@ import {
   Download,
   ExternalLink,
   Globe,
-  Laptop,
   Layers,
   Monitor,
   ShieldCheck,
@@ -44,11 +43,6 @@ export default function LandingPage({ onEnterConsole }) {
         name: `I-ITSM-android-debug-${FALLBACK_VERSION}.apk`,
         url: `https://github.com/${GITHUB_REPO}/releases/download/v${FALLBACK_VERSION}/I-ITSM-android-debug-${FALLBACK_VERSION}.apk`,
         size: '4.9 MB',
-      },
-      mac: {
-        name: `I-ITSM-mac-universal-${FALLBACK_VERSION}.dmg`,
-        url: `https://github.com/${GITHUB_REPO}/releases/download/v${FALLBACK_VERSION}/I-ITSM-mac-universal-${FALLBACK_VERSION}.dmg`,
-        size: '218.7 MB',
       },
     },
     isLoaded: false,
@@ -88,9 +82,6 @@ export default function LandingPage({ onEnterConsole }) {
 
         const winAsset = assetsList.find((a) => a.name.toLowerCase().endsWith('.exe'));
         const androidAsset = assetsList.find((a) => a.name.toLowerCase().endsWith('.apk'));
-        const macAsset = assetsList.find(
-          (a) => a.name.toLowerCase().endsWith('.dmg') || a.name.toLowerCase().endsWith('.pkg')
-        );
 
         let formattedDate = null;
         if (data.published_at) {
@@ -122,13 +113,6 @@ export default function LandingPage({ onEnterConsole }) {
                 androidAsset?.browser_download_url ||
                 `https://github.com/${GITHUB_REPO}/releases/download/${rawTag}/I-ITSM-android-debug-${cleanVersion}.apk`,
               size: androidAsset ? formatBytes(androidAsset.size) : '',
-            },
-            mac: {
-              name: macAsset?.name || `I-ITSM-mac-universal-${cleanVersion}.dmg`,
-              url:
-                macAsset?.browser_download_url ||
-                `https://github.com/${GITHUB_REPO}/releases/download/${rawTag}/I-ITSM-mac-universal-${cleanVersion}.dmg`,
-              size: macAsset ? formatBytes(macAsset.size) : '',
             },
           },
           isLoaded: true,
@@ -187,24 +171,6 @@ export default function LandingPage({ onEnterConsole }) {
       action: `Download Android APK${releaseData.assets.android.size ? ` (${releaseData.assets.android.size})` : ''}`,
       downloadUrl: releaseData.assets.android.url,
       downloadName: releaseData.assets.android.name,
-    },
-    {
-      id: 'mac',
-      label: 'macOS',
-      title: 'macOS desktop',
-      type: 'Disk image (.dmg)',
-      icon: Laptop,
-      description: 'A desktop application for macOS users with keyboard shortcuts, system alerts, and fast navigation.',
-      facts: [
-        'macOS 12.0+ (Universal / Apple Silicon & Intel)',
-        releaseData.assets.mac.name
-          ? `${releaseData.assets.mac.name} ${releaseData.assets.mac.size ? `(${releaseData.assets.mac.size})` : ''}`
-          : 'Universal binary package',
-        releaseData.publishedAt ? `Release date: ${releaseData.publishedAt}` : 'Always current with latest cloud build',
-      ],
-      action: `Download macOS DMG${releaseData.assets.mac.size ? ` (${releaseData.assets.mac.size})` : ''}`,
-      downloadUrl: releaseData.assets.mac.url,
-      downloadName: releaseData.assets.mac.name,
     },
     {
       id: 'web',
@@ -296,7 +262,7 @@ export default function LandingPage({ onEnterConsole }) {
             </p>
             <p className="public-hero__lead">
               Report Wi-Fi issues, lab system faults, and hostel network problems. Track updates from your browser,
-              Windows desktop, Mac, or Android phone.
+              Windows desktop, or Android phone.
             </p>
             <div className="public-actions">
               <a className="public-action public-action--primary" href="#downloads" onClick={scrollTo('downloads')}>
@@ -324,7 +290,7 @@ export default function LandingPage({ onEnterConsole }) {
               </div>
               <div className="public-stat">
                 <span className="public-stat__value">Multi-client</span>
-                <span>Windows, Android, Mac, web</span>
+                <span>Windows, Android, web</span>
               </div>
             </div>
           </div>
@@ -519,7 +485,7 @@ export default function LandingPage({ onEnterConsole }) {
 
       <footer className="public-footer">
         <p>BPHC CS F213 OOP Project (2026–2027) · Campus IT HelpDesk</p>
-        <p>Available on Windows desktop, Android mobile, macOS, and web browsers.</p>
+        <p>Available on Windows desktop, Android mobile, and web browsers.</p>
       </footer>
     </div>
   );
