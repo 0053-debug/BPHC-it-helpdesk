@@ -27,12 +27,16 @@ I-ITSM is built upon enterprise software engineering principles and GoF (Gang of
 
 ### 1. State Pattern (`IncidentLifecycle`)
 - Enforces strict unidirectional state transitions for incidents:
-  $$\text{LOGGED} \longrightarrow \text{ASSIGNED} \longrightarrow \text{IN\_PROGRESS} \longrightarrow \text{RESOLVED} \longrightarrow \text{CLOSED}$$
+
+  ```text
+  LOGGED ──> ASSIGNED ──> IN_PROGRESS ──> RESOLVED ──> CLOSED
+  ```
+
 - Eliminates invalid transition states (e.g., closing an unassigned ticket or moving an incident backwards from closed to logged without explicit reopening workflows).
 
 ### 2. Strategy Pattern
 - **Priority Calculation Strategy (`PriorityCalculator`)**:
-  - Dynamically calculates ticket priority ($P1$ Critical down to $P4$ Low) by evaluating impact scope, service criticality, and operational urgency matrix.
+  - Dynamically calculates ticket priority (P1 Critical down to P4 Low) by evaluating impact scope, service criticality, and operational urgency matrix.
 - **Technician Assignment Strategy (`AssignmentStrategy`)**:
   - Balances technician active ticket workload, category specialization (Hardware, Network, Software, Identity), and availability to assign incoming tickets automatically to the optimal technician.
 
@@ -41,7 +45,7 @@ I-ITSM is built upon enterprise software engineering principles and GoF (Gang of
 - When an incident changes state, is reassigned, or escalated, publisher broadcasts events to subscribed listeners:
   - **`AuditLoggingObserver`**: Generates append-only audit trail records.
   - **`NotificationObserver`**: Dispatches in-app alerts and notifications to assignees and reporters.
-  - **`EmailNotificationObserver`**: Issues formatted email dispatches for critical $P1/P2$ alerts.
+  - **`EmailNotificationObserver`**: Issues formatted email dispatches for critical P1/P2 alerts.
 
 ### 4. Directed Acyclic Graph (DAG) Dependency Engine
 - Models campus IT infrastructure and services as a directed graph.
