@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ticket Progress Update - BPHC IT HelpDesk</title>
+</head>
+<body style="margin:0;padding:24px;background-color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f8fafc;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center">
+        <table width="580" border="0" cellspacing="0" cellpadding="0" style="background:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #334155;">
+          <tr>
+            <td style="background:linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);padding:22px 28px;color:#ffffff;">
+              <table width="100%">
+                <tr>
+                  <td>
+                    <h1 style="margin:0;font-size:18px;font-weight:800;letter-spacing:-0.5px;">BPHC I-ITSM</h1>
+                    <p style="margin:3px 0 0;font-size:12px;color:#bfdbfe;">Campus Incident & Request Lifecycle</p>
+                  </td>
+                  <td align="right">
+                    <span style="background:#1d4ed8;color:#ffffff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;">STATUS UPDATE</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px;">
+              <h2 style="margin:0 0 8px;font-size:16px;color:#f8fafc;">Progress on Ticket <span style="color:#38bdf8;">#{{ticket_id}}</span></h2>
+              <p style="margin:0 0 18px;font-size:13px;color:#94a3b8;line-height:1.5;">
+                Hello <strong>{{recipient_name}}</strong>, your request has progressed to the next operational phase:
+              </p>
+
+              <div style="background:#0f172a;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid #334155;">
+                <p style="margin:0 0 10px;font-size:12px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Status Transition</p>
+                <div style="font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                  <span style="background:#334155;color:#94a3b8;padding:4px 10px;border-radius:4px;">{{previous_status}}</span>
+                  <span style="color:#64748b;">&rarr;</span>
+                  <span style="background:#0284c7;color:#ffffff;padding:4px 10px;border-radius:4px;">{{current_status}}</span>
+                </div>
+
+                <table width="100%" style="font-size:13px;color:#cbd5e1;border-collapse:collapse;margin-top:12px;border-top:1px solid #1e293b;padding-top:10px;">
+                  <tr>
+                    <td style="padding:6px 0;color:#94a3b8;width:35%;">Subject:</td>
+                    <td style="padding:6px 0;font-weight:600;color:#f8fafc;">{{ticket_title}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;color:#94a3b8;">Technician:</td>
+                    <td style="padding:6px 0;font-weight:600;color:#38bdf8;">{{technician_name}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;color:#94a3b8;">Status Note:</td>
+                    <td style="padding:6px 0;color:#cbd5e1;">{{status_note}}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="text-align:center;margin:24px 0 12px;">
+                <a href="{{ticket_url}}" style="background:#38bdf8;color:#0f172a;text-decoration:none;padding:11px 26px;border-radius:8px;font-size:13px;font-weight:700;display:inline-block;">
+                  View Live Progress &rarr;
+                </a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#0f172a;padding:14px 28px;border-top:1px solid #334155;font-size:11px;color:#64748b;text-align:center;">
+              Need to add more information? Reply directly on the ticket page.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

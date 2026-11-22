@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SLA Alert - BPHC IT HelpDesk</title>
+</head>
+<body style="margin:0;padding:24px;background-color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f8fafc;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center">
+        <table width="580" border="0" cellspacing="0" cellpadding="0" style="background:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #334155;">
+          <tr>
+            <td style="background:linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);padding:22px 28px;color:#ffffff;">
+              <table width="100%">
+                <tr>
+                  <td>
+                    <h1 style="margin:0;font-size:18px;font-weight:800;letter-spacing:-0.5px;">BPHC I-ITSM</h1>
+                    <p style="margin:3px 0 0;font-size:12px;color:#fecaca;">Service Level Agreement (SLA) Escalation</p>
+                  </td>
+                  <td align="right">
+                    <span style="background:#991b1b;color:#fef2f2;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;">{{sla_type}} BREACH</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px;">
+              <h2 style="margin:0 0 8px;font-size:16px;color:#f8fafc;">SLA Target Breached on Ticket <span style="color:#ef4444;">#{{ticket_id}}</span></h2>
+              <p style="margin:0 0 18px;font-size:13px;color:#94a3b8;line-height:1.5;">
+                An automated service alert has triggered because the service commitment target for this request was exceeded.
+              </p>
+
+              <div style="background:#0f172a;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid #334155;">
+                <table width="100%" style="font-size:13px;color:#cbd5e1;border-collapse:collapse;">
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:7px 0;color:#94a3b8;width:35%;">Ticket Subject:</td>
+                    <td style="padding:7px 0;font-weight:600;color:#f8fafc;">{{ticket_title}}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:7px 0;color:#94a3b8;">Priority Tier:</td>
+                    <td style="padding:7px 0;font-weight:700;color:#f59e0b;">{{priority}}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:7px 0;color:#94a3b8;">Target Deadline:</td>
+                    <td style="padding:7px 0;font-weight:600;color:#f87171;">{{deadline}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:7px 0;color:#94a3b8;">Escalation Status:</td>
+                    <td style="padding:7px 0;font-weight:600;color:#ef4444;">{{escalation_status}}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="text-align:center;margin:24px 0 12px;">
+                <a href="{{ticket_url}}" style="background:#ef4444;color:#ffffff;text-decoration:none;padding:11px 26px;border-radius:8px;font-size:13px;font-weight:700;display:inline-block;">
+                  View & Expedite Ticket &rarr;
+                </a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#0f172a;padding:14px 28px;border-top:1px solid #334155;font-size:11px;color:#64748b;text-align:center;">
+              BITS Pilani Hyderabad Campus • Internal IT Support Operations
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

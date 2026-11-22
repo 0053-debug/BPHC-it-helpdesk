@@ -5,6 +5,9 @@ const EMAILJS_TEMPLATE_RESET_PASSWORD = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
 const EMAILJS_TEMPLATE_RESET_SUCCESS = import.meta.env.VITE_EMAILJS_TEMPLATE_RESET_SUCCESS || 'template_q5i4cvk';
 const EMAILJS_TEMPLATE_WELCOME = import.meta.env.VITE_EMAILJS_TEMPLATE_WELCOME || '';
 const EMAILJS_TEMPLATE_TICKET_CREATED = import.meta.env.VITE_EMAILJS_TEMPLATE_TICKET_CREATED || 'template_y8gkreo';
+const EMAILJS_TEMPLATE_TICKET_PROGRESS = import.meta.env.VITE_EMAILJS_TEMPLATE_TICKET_PROGRESS || EMAILJS_TEMPLATE_TICKET_CREATED;
+const EMAILJS_TEMPLATE_TICKET_RESOLVED = import.meta.env.VITE_EMAILJS_TEMPLATE_TICKET_RESOLVED || EMAILJS_TEMPLATE_TICKET_CREATED;
+const EMAILJS_TEMPLATE_SLA_BREACH = import.meta.env.VITE_EMAILJS_TEMPLATE_SLA_BREACH || EMAILJS_TEMPLATE_TICKET_CREATED;
 const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'CzMJDOJR9b-LtHStA';
 
 export function isEmailConfigured(templateId) {
@@ -33,13 +36,7 @@ export async function sendPasswordResetEmail({ toEmail, resetLink, recipientName
       message: `You requested a password reset for your BPHC IT HelpDesk account. Click here to reset your password: ${resetLink}`,
     };
 
-    const result = await emailjs.send(
-      EMAILJS_SERVICE_ID,
-      EMAILJS_TEMPLATE_RESET_PASSWORD,
-      templateParams,
-      EMAILJS_PUBLIC_KEY
-    );
-
+    const result = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_RESET_PASSWORD, templateParams, EMAILJS_PUBLIC_KEY);
     return { sent: true, result };
   } catch (error) {
     console.warn('EmailJS password reset dispatch failed:', error);
@@ -84,7 +81,7 @@ export async function sendPasswordResetSuccessEmail({ toEmail, recipientName = '
  * 3. Welcome to BPHC I-ITSM Email
  */
 export async function sendWelcomeEmail({ toEmail, userName, role = 'End User' }) {
-  const templateId = EMAILJS_TEMPLATE_WELCOME;
+  const templateId = EMAILJS_TEMPLATE_WELCOME || EMAILJS_TEMPLATE_TICKET_CREATED;
   if (!isEmailConfigured(templateId)) return { sent: false, reason: 'UNCONFIGURED' };
 
   try {
@@ -144,6 +141,101 @@ export async function sendTicketCreatedEmail({ toEmail, userName, ticketId, titl
     return { sent: true, result };
   } catch (error) {
     console.error('EmailJS ticket notification failed:', error);
+    return { sent: false, error };
+  }
+}
+
+/**
+ * 5. Ticket Progress / Lifecycle Transition
+ */
+export async function sendTicketProgressEmail({ toEmail, userName, ticketId, title, previousStatus, currentStatus, statusNote, technicianName }) {
+  const templateId = EMAILJS_TEMPLATE_TICKET_PROGRESS;
+  if (!isEmailConfigured(templateId)) return { sent: false, reason: 'UNCONFIGURED' };
+
+  try {
+    const templateParams = {
+      to_name: userName || 'User',
+      name: userName || 'User',
+      to_email: toEmail,
+      recipient_email: toEmail,
+      email: toEmail,
+      user_email: toEmail,
+      ticket_id: ticketId,
+      ticket_title: title,
+      previous_status: previousStatus || 'IN_PROGRESS',
+      current_status: currentStatus,
+      status_note: statusNote || `Ticket status changed to ${currentStatus}`,
+      technician_name: technicianName || 'Campus IT Specialist',
+      ticket_url: `https://bphc-it-helpdesk.web.app/?app=console&tab=incidents`,
+    };
+
+    const result = await emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams, EMAILJS_PUBLIC_KEY);
+    return { sent: true, result };
+  } catch (error) {
+    console.warn('EmailJS ticket progress dispatch failed:', error);
+    return { sent: false, error };
+  }
+}
+
+/**
+ * 6. Ticket Resolved Notification
+ */
+export async function sendTicketResolvedEmail({ toEmail, userName, ticketId, title, resolutionNotes, rootCause, technicianName }) {
+  const templateId = EMAILJS_TEMPLATE_TICKET_RESOLVED;
+  if (!isEmailConfigured(templateId)) return { sent: false, reason: 'UNCONFIGURED' };
+
+  try {
+    const templateParams = {
+      to_name: userName || 'User',
+      name: userName || 'User',
+      to_email: toEmail,
+      recipient_email: toEmail,
+      email: toEmail,
+      user_email: toEmail,
+      ticket_id: ticketId,
+      ticket_title: title,
+      resolution_notes: resolutionNotes,
+      root_cause: rootCause,
+      technician_name: technicianName || 'Campus IT Specialist',
+      ticket_url: `https://bphc-it-helpdesk.web.app/?app=console&tab=incidents`,
+    };
+
+    const result = await emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams, EMAILJS_PUBLIC_KEY);
+    return { sent: true, result };
+  } catch (error) {
+    console.warn('EmailJS ticket resolved dispatch failed:', error);
+    return { sent: false, error };
+  }
+}
+
+/**
+ * 7. SLA Breach / Escalation Alert
+ */
+export async function sendSlaBreachEmail({ toEmail, userName, ticketId, title, slaType = 'Resolution', priority = 'HIGH', deadline, escalationStatus = 'BREACHED' }) {
+  const templateId = EMAILJS_TEMPLATE_SLA_BREACH;
+  if (!isEmailConfigured(templateId)) return { sent: false, reason: 'UNCONFIGURED' };
+
+  try {
+    const templateParams = {
+      to_name: userName || 'Support Team',
+      name: userName || 'Support Team',
+      to_email: toEmail,
+      recipient_email: toEmail,
+      email: toEmail,
+      user_email: toEmail,
+      ticket_id: ticketId,
+      ticket_title: title,
+      sla_type: slaType,
+      priority: priority,
+      deadline: deadline || new Date().toLocaleString(),
+      escalation_status: escalationStatus,
+      ticket_url: `https://bphc-it-helpdesk.web.app/?app=console&tab=incidents`,
+    };
+
+    const result = await emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams, EMAILJS_PUBLIC_KEY);
+    return { sent: true, result };
+  } catch (error) {
+    console.warn('EmailJS SLA breach dispatch failed:', error);
     return { sent: false, error };
   }
 }

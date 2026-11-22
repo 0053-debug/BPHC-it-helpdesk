@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ticket Resolved - BPHC IT HelpDesk</title>
+</head>
+<body style="margin:0;padding:24px;background-color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f8fafc;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center">
+        <table width="580" border="0" cellspacing="0" cellpadding="0" style="background:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #334155;">
+          <tr>
+            <td style="background:linear-gradient(135deg, #065f46 0%, #059669 100%);padding:22px 28px;color:#ffffff;">
+              <table width="100%">
+                <tr>
+                  <td>
+                    <h1 style="margin:0;font-size:18px;font-weight:800;letter-spacing:-0.5px;">BPHC I-ITSM</h1>
+                    <p style="margin:3px 0 0;font-size:12px;color:#a7f3d0;">Issue Resolved & Verified</p>
+                  </td>
+                  <td align="right">
+                    <span style="background:#047857;color:#ffffff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;">RESOLVED</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px;">
+              <h2 style="margin:0 0 8px;font-size:16px;color:#f8fafc;">Ticket <span style="color:#10b981;">#{{ticket_id}}</span> Has Been Resolved</h2>
+              <p style="margin:0 0 18px;font-size:13px;color:#94a3b8;line-height:1.5;">
+                Hello <strong>{{recipient_name}}</strong>, the assigned technician has marked your ticket as resolved. Please review the resolution details below:
+              </p>
+
+              <div style="background:#0f172a;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid #334155;">
+                <table width="100%" style="font-size:13px;color:#cbd5e1;border-collapse:collapse;">
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:7px 0;color:#94a3b8;width:35%;">Issue:</td>
+                    <td style="padding:7px 0;font-weight:600;color:#f8fafc;">{{ticket_title}}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:7px 0;color:#94a3b8;">Technician:</td>
+                    <td style="padding:7px 0;font-weight:600;color:#38bdf8;">{{technician_name}}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:7px 0;color:#94a3b8;">Resolution Notes:</td>
+                    <td style="padding:7px 0;color:#e2e8f0;">{{resolution_notes}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:7px 0;color:#94a3b8;">Root Cause:</td>
+                    <td style="padding:7px 0;color:#94a3b8;">{{root_cause}}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="text-align:center;margin:24px 0 12px;">
+                <a href="{{ticket_url}}" style="background:#10b981;color:#ffffff;text-decoration:none;padding:11px 26px;border-radius:8px;font-size:13px;font-weight:700;display:inline-block;">
+                  Confirm Fix & Close Ticket &rarr;
+                </a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#0f172a;padding:14px 28px;border-top:1px solid #334155;font-size:11px;color:#64748b;text-align:center;">
+              If your issue persists, you can reopen this ticket directly from the portal within 48 hours.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

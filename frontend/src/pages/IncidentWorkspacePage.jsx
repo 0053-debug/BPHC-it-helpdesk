@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import TicketChatWidget from '../components/TicketChatWidget';
-import { sendTicketCreatedEmail } from '../services/emailService';
+import { sendTicketCreatedEmail, sendTicketProgressEmail, sendTicketResolvedEmail } from '../services/emailService';
 
 
 const categories = ['HARDWARE', 'SOFTWARE', 'NETWORK', 'DATABASE', 'CLOUD', 'SECURITY', 'AUTHENTICATION', 'APPLICATION', 'STORAGE'];
@@ -69,15 +69,47 @@ export default function IncidentWorkspacePage({ currentUser }) {
     catch (e) { setError(e.response?.data?.message || 'Could not post update.'); }
   };
   const transition = async (action) => {
-    try { const { data } = await api.post(`/incidents/${selected.id}/${action}`); setSelected(data); await refresh(); }
-    catch (e) { setError(e.response?.data?.message || `Could not ${action} incident.`); }
+    try {
+      const prevStatus = selected?.status;
+      const { data } = await api.post(`/incidents/${selected.id}/${action}`);
+      setSelected(data);
+      await refresh();
+      const userEmail = currentUser?.email || (JSON.parse(localStorage.getItem('iitsm_user') || '{}')).email;
+      if (userEmail) {
+        sendTicketProgressEmail({
+          toEmail: userEmail,
+          userName: currentUser?.fullName || 'User',
+          ticketId: data.trackingNumber || data.id,
+          title: data.title,
+          previousStatus: prevStatus,
+          currentStatus: data.status,
+          statusNote: `Ticket transitioned via ${action}`,
+          technicianName: data.technicianName || 'Specialist',
+        }).catch((err) => console.warn('Progress email dispatch failed:', err));
+      }
+    } catch (e) { setError(e.response?.data?.message || `Could not ${action} incident.`); }
   };
   const employee = currentUser?.role === 'ROLE_EMPLOYEE';
   const assignedTechnician = currentUser?.role === 'ROLE_TECHNICIAN' && Number(selected?.technicianId) === Number(currentUser.id);
   const resolveIncident = async (event) => {
     event.preventDefault();
-    try { const { data } = await api.post(`/incidents/${selected.id}/resolve`, { resolutionNotes, rootCause }); setSelected(data); await refresh(); }
-    catch (e) { setError(e.response?.data?.message || 'Could not resolve incident.'); }
+    try {
+      const { data } = await api.post(`/incidents/${selected.id}/resolve`, { resolutionNotes, rootCause });
+      setSelected(data);
+      await refresh();
+      const userEmail = currentUser?.email || (JSON.parse(localStorage.getItem('iitsm_user') || '{}')).email;
+      if (userEmail) {
+        sendTicketResolvedEmail({
+          toEmail: userEmail,
+          userName: currentUser?.fullName || 'User',
+          ticketId: data.trackingNumber || data.id,
+          title: data.title,
+          resolutionNotes,
+          rootCause,
+          technicianName: data.technicianName || 'Specialist',
+        }).catch((err) => console.warn('Resolved email dispatch failed:', err));
+      }
+    } catch (e) { setError(e.response?.data?.message || 'Could not resolve incident.'); }
   };
 
   return <div className="space-y-8">
