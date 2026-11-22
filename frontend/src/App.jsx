@@ -86,6 +86,7 @@ function getInitialTab(user) {
 export default function App() {
   const [currentUser, setCurrentUser] = useState(readStoredUser);
   const [activeTab, setActiveTab] = useState(() => getInitialTab(readStoredUser()));
+  const [prefilledEmail, setPrefilledEmail] = useState('');
 
   const isNative = isNativeApp();
   const params = new URLSearchParams(window.location.search);
@@ -210,12 +211,25 @@ export default function App() {
       <main id="tab-panel" className="console-main" role="tabpanel" aria-labelledby={`tab-${activeTab}`} tabIndex={-1}>
         {activeTab === 'login' && (
           <LoginPage
+            initialEmail={prefilledEmail}
             onAuthenticated={handleAuthenticated}
-            onRegister={() => setActiveTab('register')}
+            onRegister={(email) => {
+              if (typeof email === 'string' && email.trim()) setPrefilledEmail(email.trim());
+              setActiveTab('register');
+            }}
             onForgotPassword={() => setActiveTab('forgot-password')}
           />
         )}
-        {activeTab === 'register' && <RegisterPage onAuthenticated={handleAuthenticated} onLogin={() => setActiveTab('login')} />}
+        {activeTab === 'register' && (
+          <RegisterPage
+            initialEmail={prefilledEmail}
+            onAuthenticated={handleAuthenticated}
+            onLogin={(email) => {
+              if (typeof email === 'string' && email.trim()) setPrefilledEmail(email.trim());
+              setActiveTab('login');
+            }}
+          />
+        )}
         {activeTab === 'forgot-password' && (
           <ForgotPasswordPage
             onBackToLogin={() => setActiveTab('login')}

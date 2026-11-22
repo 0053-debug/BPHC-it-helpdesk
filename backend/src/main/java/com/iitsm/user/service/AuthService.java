@@ -42,6 +42,9 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
         String email = request.email().trim().toLowerCase(java.util.Locale.ROOT);
+        if (userService.findByEmail(email).isEmpty()) {
+            throw new InvalidCredentialsException("No account registered with email '" + email + "'. Please create an account to get started.");
+        }
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     email, request.password()));
@@ -49,7 +52,7 @@ public class AuthService {
             if (exception instanceof InternalAuthenticationServiceException) {
                 throw exception;
             }
-            throw new InvalidCredentialsException();
+            throw new InvalidCredentialsException("Incorrect password for '" + email + "'. Please check your password or use 'Forgot password'.");
         }
         User user = userService.requireByEmail(email);
         return new AuthResponse(tokenProvider.issueToken(user), "Bearer", UserResponse.from(user));
